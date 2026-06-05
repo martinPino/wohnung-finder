@@ -282,6 +282,34 @@
       border-top: 1px solid var(--gray-100);
     }
     footer a { color: var(--gray-400); }
+  /* ── MOBILE ─────────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    nav { padding: .75rem 1rem; }
+    .nav-cta { font-size: .8rem; padding: .4rem .9rem; }
+
+    .hero { padding: 3rem 1.25rem 2.5rem; }
+    .hero h1 { font-size: 2rem; }
+    .hero p { font-size: 1rem; }
+    .hero-btns { flex-direction: column; align-items: stretch; }
+    .btn-primary, .btn-secondary { justify-content: center; }
+
+    .screenshot-wrap { padding: 0 1rem; margin-bottom: 3rem; }
+
+    .section { padding: 3rem 1.25rem; }
+    .section h2 { font-size: 1.6rem; }
+    .section-sub { font-size: .95rem; }
+    .features-grid { grid-template-columns: 1fr; }
+
+    .step { gap: 1rem; }
+    .step h3 { font-size: .95rem; }
+
+    .reqs { padding: 1.25rem; }
+
+    .cta-section { padding: 3.5rem 1.25rem; }
+    .cta-section h2 { font-size: 1.6rem; }
+    .cta-section p { font-size: .95rem; }
+    .btn-white { width: 100%; justify-content: center; }
+  }
   </style>
 </head>
 <body>
