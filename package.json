@@ -79,7 +79,7 @@
       ],
       "category": "public.app-category.utilities",
       "darkModeSupport": true,
-      "icon": "public/icon.icns"
+      "icon": "public/logo.png"
     },
     "dmg": {
       "title": "ImmoScout Automation ${version}",
