@@ -354,7 +354,7 @@ async function searchListings(
   if (filterToggles.radiusKm)          queryParts.push(`Radius ${filters.radiusKm}km`);
   if (filters.excludeSwapApartments)   queryParts.push("ohne Tauschwohnungen");
   if (filters.excludeNewBuildings)     queryParts.push("ohne Neubauprojekte");
-  if (filters.exclusiveOnIS24)         queryParts.push("nur bei ImmoScout24");
+  // exclusiveOnIS24 is applied as a URL param after results load — not via text
   const smartQuery = queryParts.join(", ");
   log("info", `Smart search query: "${smartQuery}"`);
 
@@ -382,6 +382,20 @@ async function searchListings(
   }
 
   log("info", `Search URL: ${page.url()}`);
+
+  // Append exclusiveonis24=true to the results URL if filter is active
+  if (filters.exclusiveOnIS24 && page.url().includes("immobilienscout24.de")) {
+    const currentUrl = page.url();
+    if (!currentUrl.includes("exclusiveonis24")) {
+      const separator = currentUrl.includes("?") ? "&" : "?";
+      const newUrl = `${currentUrl}${separator}exclusiveonis24=true`;
+      log("info", "Applying exclusiveOnIS24 filter — reloading…");
+      await page.goto(newUrl, { waitUntil: "domcontentloaded" });
+      await page.waitForTimeout(2000);
+      log("info", `Reloaded: ${page.url()}`);
+    }
+  }
+
   await dismissCookieBanner(page, log);
 
   // Wait for listings to appear
