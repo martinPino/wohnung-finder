@@ -1,128 +1,349 @@
-# ImmoScout24 Automation
+# WohnungFinder — ImmoScout24 Automation
 
-A local Next.js app that automates sending contact requests to rental listings on ImmoScout24.
+> Automatisch Kontaktanfragen auf ImmobilienScout24 senden.  
+> macOS Desktop App · Next.js + Playwright + Electron
 
-> **Security notice:** Your ImmoScout24 email and password are stored in your browser's `localStorage` only — they are never sent to any external server. You are solely responsible for the security of this device and your account.
+**Landing page:** https://martinpino.github.io/immoscout-automation  
+**Download:** https://schwarzboeck7.gumroad.com/l/sgotr
 
 ---
 
-## Project structure
+## Inhaltsverzeichnis
+
+- [Überblick](#überblick)
+- [Architektur](#architektur)
+- [Projektstruktur](#projektstruktur)
+- [Lokale Entwicklung](#lokale-entwicklung)
+- [Automatisierung](#automatisierung)
+- [Electron Desktop App](#electron-desktop-app)
+- [Build & Release](#build--release)
+- [Landing Page](#landing-page)
+- [Konfiguration](#konfiguration)
+- [Bekannte Einschränkungen](#bekannte-einschränkungen)
+
+---
+
+## Überblick
+
+WohnungFinder ist eine lokale macOS-Desktop-App, die automatisch Kontaktanfragen für Mietwohnungen auf ImmobilienScout24 sendet.
+
+**Was sie tut:**
+1. Navigiert zu ImmobilienScout24 und sucht nach Wohnungen mit den konfigurierten Filtern
+2. Öffnet jedes Inserat und füllt das Kontaktformular aus
+3. Klickt "Abschicken" — fertig
+4. Merkt sich bereits kontaktierte Inserate (keine Duplikate)
+5. Kann automatisch in konfigurierbaren Intervallen laufen (Zeitplan)
+
+**Technologie:**
+- **Frontend:** Next.js 14 + TypeScript + Tailwind CSS
+- **Automatisierung:** Playwright (Browser-Steuerung via CDP)
+- **Desktop:** Electron 31
+- **Scheduling:** Node.js setInterval + globalThis-Singleton
+- **Mehrsprachig:** DE / EN / ES
+
+---
+
+## Architektur
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Electron Main Process               │
+│  - Startet Next.js Server (Port 3847 in Produktion) │
+│  - Öffnet BrowserWindow → lädt localhost            │
+│  - Auto-Update via electron-updater + GitHub        │
+└──────────────────┬──────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────┐
+│              Next.js App (Port 3005 dev)             │
+│                                                      │
+│  Pages / UI          API Routes                      │
+│  ─────────────       ──────────────────────          │
+│  / (index.tsx)  →    POST /api/run-automation        │
+│                       POST /api/stop-automation      │
+│                       POST /api/schedule             │
+│                       GET  /api/schedule             │
+│                       GET  /api/contacted-listings   │
+└──────────────────┬──────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────┐
+│           Playwright Automation Engine               │
+│                                                      │
+│  Verbindung zu Chrome:                               │
+│  1. CDP (connectOverCDP) wenn Chrome läuft           │
+│  2. launchPersistentContext wenn Chrome nicht läuft  │
+│                                                      │
+│  Flow: Login → Suche → Expose öffnen → Kontakt senden│
+└─────────────────────────────────────────────────────┘
+```
+
+### Chrome-Verbindung
+
+Da Google OAuth keine automatisierten Browser akzeptiert, verbindet sich WohnungFinder mit einem **bereits laufenden Chrome** via Chrome DevTools Protocol (CDP):
+
+1. `npm run chrome` → öffnet Chrome mit `--remote-debugging-port=9222` und eigenem Profil (`./browser-profile/`)
+2. Der Nutzer loggt sich **manuell** in ImmobilienScout24 ein
+3. Die Automation verbindet sich via CDP zu diesem Chrome — kein erneuter Login nötig
+
+---
+
+## Projektstruktur
 
 ```
 immoscout-automation/
+│
+├── electron/                    # Electron Main Process
+│   ├── main.ts                  # Fenster, Server-Start, Auto-Update
+│   └── tsconfig.json            # TS-Config für Electron (CommonJS)
+│
 ├── src/
-│   ├── types/           # Shared TypeScript interfaces (AppConfig, SearchFilters, …)
-│   ├── hooks/           # useLocalStorage — SSR-safe persistent state
-│   ├── utils/           # Storage keys, defaults, readConfigFromStorage()
+│   ├── automation/
+│   │   ├── immoscout.ts         # Playwright-Automation (Login, Suche, Kontakt)
+│   │   ├── demo.ts              # Demo-Script für Screen-Recordings
+│   │   └── inspect.ts           # Debugging-Script für DOM-Selektoren
+│   │
 │   ├── components/
-│   │   ├── FilterForm.tsx      # Search filters with per-field toggles
-│   │   ├── CredentialsForm.tsx # Email + password inputs
-│   │   ├── MessageForm.tsx     # Contact message template editor
-│   │   └── StatusPanel.tsx     # Live log, counters, stop button
+│   │   ├── FilterForm.tsx       # Suchfilter mit Toggles
+│   │   ├── CredentialsForm.tsx  # IS24-Login + Premium-Toggle
+│   │   ├── MessageForm.tsx      # Nachrichtenvorlage
+│   │   ├── StatusPanel.tsx      # Live-Log, Zähler, Stop-Button
+│   │   ├── ContactedList.tsx    # History kontaktierter Inserate
+│   │   └── ScheduleForm.tsx     # Zeitplan-Konfiguration
+│   │
+│   ├── hooks/
+│   │   ├── useLocalStorage.ts   # SSR-sicherer localStorage-Hook
+│   │   └── useLang.ts           # Sprachumschalter (DE/EN/ES)
+│   │
+│   ├── lib/
+│   │   ├── cancellation.ts      # Globales Stop-Token + aktive Page-Referenz
+│   │   ├── i18n.ts              # Übersetzungen (DE/EN/ES)
+│   │   └── scheduler.ts         # Cron-Scheduler via globalThis-Singleton
+│   │
 │   ├── pages/
-│   │   ├── index.tsx           # Main UI — tabbed config + "Start automation"
+│   │   ├── index.tsx            # Haupt-UI (Tabs, Start-Button, Status)
 │   │   └── api/
-│   │       └── run-automation.ts  # API route that triggers Playwright
-│   └── automation/
-│       └── immoscout.ts        # Playwright logic (stub — implement Phase 2)
-├── package.json
-├── tsconfig.json
-├── tsconfig.automation.json    # Separate TS config for the automation script
-├── next.config.js
-├── tailwind.config.js
-└── postcss.config.js
+│   │       ├── run-automation.ts      # POST → startet Playwright
+│   │       ├── stop-automation.ts     # POST → schließt aktive Page
+│   │       ├── schedule.ts            # GET/POST → Zeitplan verwalten
+│   │       └── contacted-listings.ts  # GET → contacted.json lesen
+│   │
+│   ├── types/index.ts           # Alle TypeScript-Interfaces
+│   └── utils/storage.ts         # localStorage-Keys + Default-Werte
+│
+├── docs/                        # GitHub Pages Landing Page
+│   ├── index.html               # Landing Page (HTML/CSS, kein Framework)
+│   ├── logo.png                 # App-Logo
+│   └── demo.mp4                 # Demo-Video (konvertiert von .mov)
+│
+├── public/
+│   └── logo.png                 # Logo für Electron-App-Icon
+│
+├── .github/workflows/
+│   └── release.yml              # GitHub Actions: Build .dmg bei git tag
+│
+├── next.config.js               # Next.js + standalone output + external packages
+├── package.json                 # Scripts + electron-builder Konfiguration
+├── tsconfig.json                # Next.js TS-Config (excludes electron/)
+└── tsconfig.automation.json     # TS-Config für Playwright-Scripts (CommonJS)
 ```
+
+### Laufzeit-Dateien (nicht im Git)
+
+| Datei | Inhalt |
+|---|---|
+| `contacted.json` | Array von `{id, url, title, sentAt}` — bereits kontaktierte Inserate |
+| `schedule.json` | `{enabled, intervalMinutes}` — Zeitplan-Konfiguration |
+| `automation-config.json` | Vollständige `AppConfig` — wird vom Scheduler gelesen |
+| `browser-profile/` | Chrome-Profil mit gespeicherter IS24-Session |
 
 ---
 
-## Setup
+## Lokale Entwicklung
 
-### 1. Install dependencies
+### Voraussetzungen
+
+- macOS 12+
+- Node.js 20+
+- Google Chrome installiert
+
+### Setup
 
 ```bash
+git clone git@github-immoscout:martinPino/immoscout-automation.git
 cd immoscout-automation
 npm install
-```
-
-### 2. Install Playwright browsers
-
-```bash
 npx playwright install chromium
 ```
 
-### 3. Run the development server
+### Web-App starten (ohne Electron)
 
 ```bash
 npm run dev
+# → http://localhost:3005
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 4. (Optional) Run the automation script directly from CLI
-
-Create a config file:
+### Electron-App starten (dev mode)
 
 ```bash
-cp automation-config.example.json automation-config.json
-# edit automation-config.json with your credentials and filters
+npm run electron:compile   # einmalig oder nach Änderungen in electron/
+npm run electron:dev       # startet Next.js (Port 3005) + Electron-Fenster
 ```
 
-Then run:
+---
+
+## Automatisierung
+
+### Erstmaliger Login (einmalig)
 
 ```bash
-npm run automation automation-config.json
+npm run chrome
+# Öffnet Chrome mit Debug-Port 9222 + eigenem Profil
+# → ImmobilienScout24 manuell öffnen und einloggen
+# Chrome offen lassen
 ```
 
----
+### Automation starten
 
-## Using the app
+**Via UI:** "Automation starten" Button in der App
 
-1. **Search filters tab** — Enter a city or postal code. Toggle and configure each filter (radius, max price, min size, min rooms, listing age).
-2. **Account tab** — Enter your ImmoScout24 email and password. These are saved to `localStorage` on your machine only.
-3. **Message tab** — Edit the contact message template. Use `{listingTitle}` and `{landlordName}` as dynamic placeholders.
-4. Click **Start automation** — the app calls `/api/run-automation`, which spawns the Playwright browser, logs in, searches for listings, and submits a contact request for each one.
+**Via CLI:**
+```bash
+# automation-config.json erstellen (AppConfig-Format)
+npm run automation            # normaler Run
+npm run automation -- --dry-run   # Suche ohne Nachrichten senden
+```
 
-All configuration is auto-saved to `localStorage` as you type — no manual save needed.
+### Zeitplan
 
----
+Über die "Zeitplan"-Tab in der UI konfigurieren. Der Scheduler läuft als Node.js-`setInterval` im Next.js-Server-Prozess. State wird in `globalThis` gespeichert, um Next.js HMR-Reloads zu überleben.
 
-## Implementation roadmap
+### Stop
 
-### Phase 1 — Scaffold (done)
-- [x] Next.js + TypeScript + Tailwind project structure
-- [x] TypeScript interfaces for all data shapes
-- [x] `useLocalStorage` hook with SSR-safety
-- [x] `FilterForm`, `CredentialsForm`, `MessageForm`, `StatusPanel` components
-- [x] Main page with tabbed layout and "Start automation" button
-- [x] `/api/run-automation` API route (stub)
-- [x] `src/automation/immoscout.ts` architecture stub
-
-### Phase 2 — Playwright automation
-- [ ] Inspect ImmoScout24 DOM and find stable selectors for:
-  - Login form (`input[name="username"]`, `input[name="password"]`, submit button)
-  - Search result listing cards and their anchor `href` attributes
-  - Listing title and landlord name on the detail page
-  - Contact form fields (subject, body, submit)
-- [ ] Implement `login()` in `immoscout.ts`
-- [ ] Implement `searchListings()` — navigate results pages, handle pagination
-- [ ] Implement `contactLandlord()` — open contact form, fill, submit
-- [ ] Verify `buildSearchUrl()` matches current ImmoScout24 URL pattern
-
-### Phase 3 — Real-time progress
-- [ ] Replace the single POST response with **Server-Sent Events (SSE)** so the frontend can stream log lines and counter updates live
-- [ ] Add a stop signal (e.g. `AbortController` or a shared flag) so "Stop automation" actually halts the running Playwright process
-- [ ] Persist processed listing IDs to avoid re-contacting the same landlord on repeated runs
-
-### Phase 4 — Polish
-- [ ] Rate-limiting and randomised delays between actions
-- [ ] CAPTCHA detection and pause-with-alert
-- [ ] Export log to CSV
-- [ ] Configurable contact request limit per run
+"Automation stoppen" Button → sendet `POST /api/stop-automation` → schließt die aktive Playwright-Page sofort.
 
 ---
 
-## Notes and caveats
+## Electron Desktop App
 
-- **ToS:** Automated interaction with ImmoScout24 may violate their Terms of Service. Use responsibly and review their ToS before proceeding.
-- **Selectors may break:** ImmoScout24 updates their frontend regularly. Selectors in Phase 2 may need periodic maintenance.
-- **`headless: false`:** The Playwright stub launches a visible browser window. This is intentional — it lets you watch what's happening and intervene if needed. Change to `headless: true` once you're confident the automation is stable.
+### Dev-Mode
+
+```bash
+npm run electron:dev
+# Next.js läuft auf Port 3005
+# Electron öffnet Fenster auf http://localhost:3005
+```
+
+### Produktion
+
+In Produktion startet Electron den Next.js Standalone-Server intern (Port 3847) und öffnet das Fenster darauf. Der Nutzer braucht kein Node.js oder npm.
+
+**Laufzeit-Daten** werden in `app.getPath('userData')` gespeichert (via `IMMOSCOUT_DATA_DIR` env var):
+- macOS: `~/Library/Application Support/ImmoScout Automation/`
+
+---
+
+## Build & Release
+
+### Lokaler Build
+
+```bash
+npm run electron:build:mac
+# Generiert:
+# dist/ImmoScout Automation-1.0.0-arm64.dmg  (Apple Silicon)
+# dist/ImmoScout Automation-1.0.0.dmg         (Intel)
+```
+
+### Release veröffentlichen
+
+```bash
+git add -A
+git commit -m "Feature XYZ"
+git tag v1.0.1
+git push && git push --tags
+```
+
+GitHub Actions (`.github/workflows/release.yml`) baut automatisch den `.dmg` und veröffentlicht ihn in GitHub Releases.
+
+**Wichtig:** `GH_TOKEN` muss als Repository Secret gesetzt sein (Settings → Secrets → Actions).
+
+### Auto-Update
+
+`electron-updater` prüft beim App-Start auf neue Releases in GitHub. Wenn eine neue Version verfügbar ist, wird sie im Hintergrund heruntergeladen und beim nächsten Start installiert.
+
+---
+
+## Landing Page
+
+**URL:** https://martinpino.github.io/immoscout-automation  
+**Source:** `docs/index.html` (plain HTML/CSS, kein Framework)  
+**Hosting:** GitHub Pages, Branch `main`, Ordner `/docs`
+
+### Aktualisieren
+
+Änderungen an `docs/index.html` pushen → GitHub Pages aktualisiert automatisch innerhalb von 1–2 Minuten.
+
+### Download-Links
+
+Alle Buttons verlinken auf: `https://schwarzboeck7.gumroad.com/l/sgotr`
+
+---
+
+## Konfiguration
+
+### AppConfig (localStorage)
+
+```typescript
+interface AppConfig {
+  filters: {
+    location: string;           // Stadt oder PLZ
+    radiusKm: number;           // Suchradius in km
+    maxPriceEur: number;        // Maximale Kaltmiete
+    minSizeM2: number;          // Mindestgröße in m²
+    minRooms: number;           // Mindestzimmeranzahl
+    maxListingAgeDays: number;  // Max. Alter der Anzeige
+    maxRequestsPerRun: number;  // Anfragen pro Durchlauf (default: 3)
+    excludeSwapApartments: boolean;
+    excludeNewBuildings: boolean;
+  };
+  filterToggles: Record<string, boolean>;
+  credentials: {
+    email: string;
+    password: string;         // Nur localStorage, nie serverseitig
+    isPremiumAccount: boolean; // Premium-Anzeigen überspringen oder nicht
+  };
+  contactMessage: {
+    subject: string;
+    body: string;  // Platzhalter: {listingTitle}, {landlordName}
+  };
+}
+```
+
+### Umgebungsvariablen
+
+| Variable | Beschreibung |
+|---|---|
+| `IMMOSCOUT_DATA_DIR` | Datenverzeichnis (von Electron gesetzt) |
+| `ELECTRON_DEV_PORT` | Port für Electron dev mode (default: 3005) |
+| `PORT` | Next.js Server-Port (default: 3847 in Produktion) |
+
+---
+
+## Bekannte Einschränkungen
+
+| Problem | Ursache | Status |
+|---|---|---|
+| Nur macOS | Chrome-Launch-Code nutzt `open -a` (macOS-only) | Geplant: Windows-Support |
+| Kein MAS | Playwright + Chrome nicht MAS-sandbox-kompatibel | Won't fix |
+| IS24 Selektoren | IS24 ändert DOM regelmäßig | Bei Bedarf patchen |
+| Google OAuth | Geblockt in automatisierten Browsern | Workaround: manueller Login via CDP |
+| Große .dmg-Größe (~260MB) | node_modules + Playwright gebündelt | Optimierung geplant |
+
+---
+
+## Lizenz
+
+Copyright © 2024 martinPino. Alle Rechte vorbehalten.  
+Kein Open-Source-Lizenz — Verwendung, Kopieren und Verbreitung ohne ausdrückliche Genehmigung nicht gestattet.
+
+---
+
+*WohnungFinder ist kein offizielles Produkt von ImmobilienScout24 GmbH. Die Nutzung automatisierter Tools kann gegen die Nutzungsbedingungen von ImmobilienScout24 verstoßen. Verwendung auf eigene Verantwortung.*
