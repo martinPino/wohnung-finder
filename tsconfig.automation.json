@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "noEmit": false,
+    "outDir": ".automation-build",
+    "jsx": "react"
+  },
+  "include": ["src/automation/**/*.ts", "src/types/**/*.ts"]
+}
