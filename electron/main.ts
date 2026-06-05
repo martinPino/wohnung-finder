@@ -17,9 +17,7 @@ const DATA_DIR = app.getPath("userData");
 process.env.IMMOSCOUT_DATA_DIR = DATA_DIR;
 process.env.PORT = String(PORT);
 
-if (!isDev) {
-  process.env.NODE_ENV = "production";
-}
+// NODE_ENV is set by electron-builder automatically in production builds
 
 let mainWindow: BrowserWindow | null = null;
 let serverStarted = false;

@@ -4,7 +4,9 @@ const nextConfig = {
   output: "standalone", // generates .next/standalone — self-contained server for Electron
 
   // Prevent Next.js from trying to bundle Node-only packages used in API routes
-  serverExternalPackages: ["playwright", "playwright-core", "node-cron"],
+  experimental: {
+    serverComponentsExternalPackages: ["playwright", "playwright-core", "node-cron"],
+  },
 
   webpack: (config, { isServer }) => {
     if (!isServer) {

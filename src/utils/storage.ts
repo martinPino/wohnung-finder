@@ -33,6 +33,8 @@ export const DEFAULT_FILTER_TOGGLES: FilterToggles = {
   minSizeM2: true,
   minRooms: true,
   maxListingAgeDays: true,
+  excludeSwapApartments: true,
+  excludeNewBuildings: true,
 };
 
 export const DEFAULT_CREDENTIALS: Credentials = {

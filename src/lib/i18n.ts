@@ -226,4 +226,4 @@ export const translations = {
   },
 } as const;
 
-export type T = typeof translations.de;
+export type T = Record<keyof typeof translations.de, string>;
