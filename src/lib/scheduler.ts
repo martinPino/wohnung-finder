@@ -8,7 +8,8 @@ import * as fs from "fs";
 import * as path from "path";
 import type { ScheduleStatus } from "@/types";
 
-const SCHEDULE_FILE = path.join(process.cwd(), "schedule.json");
+const DATA_DIR = process.env.IMMOSCOUT_DATA_DIR || process.cwd();
+const SCHEDULE_FILE = path.join(DATA_DIR, "schedule.json");
 
 // ---------------------------------------------------------------------------
 // Global state — persists across Next.js HMR re-imports

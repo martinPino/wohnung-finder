@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: "standalone", // generates .next/standalone — self-contained server for Electron
 
   // Prevent Next.js from trying to bundle Node-only packages used in API routes
   serverExternalPackages: ["playwright", "playwright-core", "node-cron"],

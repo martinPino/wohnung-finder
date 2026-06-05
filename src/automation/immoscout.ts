@@ -27,8 +27,10 @@ import type { AppConfig, LogEntry } from "../types";
 
 const CDP_PORT = 9222;
 const CDP_URL = `http://localhost:${CDP_PORT}`;
-const CONTACTED_FILE = path.join(process.cwd(), "contacted.json");
-const BROWSER_PROFILE_DIR = path.join(process.cwd(), "browser-profile");
+// Use Electron userData dir when running as packaged app, otherwise cwd
+const DATA_DIR = process.env.IMMOSCOUT_DATA_DIR || process.cwd();
+const CONTACTED_FILE = path.join(DATA_DIR, "contacted.json");
+const BROWSER_PROFILE_DIR = path.join(DATA_DIR, "browser-profile");
 const CHROME_PATH =
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 

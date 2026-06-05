@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WohnungFinder – Automatisch Wohnungen auf ImmoScout24 anfragen</title>
+  <meta name="description" content="WohnungFinder automatisiert deine Wohnungssuche auf ImmobilienScout24. Filtere, finde und kontaktiere Vermieter automatisch – kostenlos für Mac." />
+  <meta property="og:title" content="WohnungFinder" />
+  <meta property="og:description" content="Automatisch Wohnungen auf ImmoScout24 anfragen. Kostenlos für Mac." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-light: #eff6ff;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-900: #111827;
+      --green: #16a34a;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--gray-900);
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--gray-100);
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+    .logo { font-size: 1.25rem; font-weight: 700; color: var(--blue); text-decoration: none; }
+    .nav-cta {
+      background: var(--blue);
+      color: #fff;
+      padding: .5rem 1.25rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .nav-cta:hover { background: var(--blue-dark); }
+
+    /* HERO */
+    .hero {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--blue);
+      padding: .3rem .85rem;
+      border-radius: 99px;
+      font-size: .8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      letter-spacing: .03em;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--gray-600);
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--blue);
+      color: #fff;
+      padding: .85rem 2rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      padding: .85rem 2rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .hero-meta {
+      margin-top: 1.25rem;
+      font-size: .85rem;
+      color: var(--gray-400);
+    }
+
+    /* SCREENSHOT */
+    .screenshot-wrap {
+      max-width: 900px;
+      margin: 2rem auto 5rem;
+      padding: 0 2rem;
+    }
+    .screenshot-wrap img {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--gray-100);
+      box-shadow: 0 24px 64px rgba(0,0,0,.12);
+    }
+    .screenshot-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.6);
+      font-size: 1.1rem;
+    }
+
+    /* FEATURES */
+    .section { padding: 5rem 2rem; }
+    .section-inner { max-width: 1000px; margin: 0 auto; }
+    .section-label {
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: .75rem;
+    }
+    .section h2 {
+      text-align: center;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: .75rem;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--gray-600);
+      max-width: 520px;
+      margin: 0 auto 3.5rem;
+      font-size: 1.05rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--gray-50);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      border: 1px solid var(--gray-100);
+    }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--blue-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+    .feature-card p { font-size: .9rem; color: var(--gray-600); line-height: 1.6; }
+
+    /* HOW IT WORKS */
+    .steps { max-width: 680px; margin: 0 auto; }
+    .step {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      background: var(--blue);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: .9rem;
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: .25rem; }
+    .step p { font-size: .9rem; color: var(--gray-600); }
+
+    /* REQUIREMENTS */
+    .reqs {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-100);
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .reqs h3 { font-weight: 700; margin-bottom: 1rem; }
+    .req-item {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: .9rem;
+    }
+    .req-item:last-child { border: none; }
+    .req-check { color: var(--green); font-weight: 700; }
+
+    /* CTA BOTTOM */
+    .cta-section {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+      padding: 5rem 2rem;
+      text-align: center;
+      color: #fff;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -.02em;
+    }
+    .cta-section p { color: rgba(255,255,255,.75); font-size: 1.1rem; margin-bottom: 2.5rem; }
+    .btn-white {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #fff;
+      color: var(--blue);
+      padding: .9rem 2.25rem;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform .1s;
+    }
+    .btn-white:hover { transform: translateY(-2px); }
+    .cta-meta { margin-top: 1rem; color: rgba(255,255,255,.5); font-size: .85rem; }
+
+    /* FOOTER */
+    footer {
+      padding: 2rem;
+      text-align: center;
+      color: var(--gray-400);
+      font-size: .85rem;
+      border-top: 1px solid var(--gray-100);
+    }
+    footer a { color: var(--gray-400); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">WohnungFinder</a>
+    <a class="nav-cta" href="#download">Kostenlos herunterladen</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge">Kostenlos · Nur für Mac</div>
+    <h1>Wohnungssuche auf <span>Autopilot</span></h1>
+    <p>WohnungFinder sendet automatisch Kontaktanfragen auf ImmobilienScout24 – mit deinen Filtern, deiner Nachricht, rund um die Uhr.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#download" id="download">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Für Mac herunterladen
+      </a>
+      <a class="btn-secondary" href="https://github.com/martinPino/immoscout-automation" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        GitHub
+      </a>
+    </div>
+    <p class="hero-meta">macOS 12+ · Kostenlos · Google Chrome erforderlich</p>
+  </section>
+
+  <!-- SCREENSHOT -->
+  <div class="screenshot-wrap">
+    <div class="screenshot-placeholder">Screenshot kommt bald</div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" style="background: var(--gray-50);">
+    <div class="section-inner">
+      <p class="section-label">Features</p>
+      <h2>Alles was du brauchst</h2>
+      <p class="section-sub">Konfiguriere einmal, lass WohnungFinder den Rest erledigen.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Intelligente Filter</h3>
+          <p>Stadt, Radius, Maximalmiete, Mindestgröße, Zimmeranzahl – alle Filter die ImmoScout24 bietet, in einer App.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✉️</div>
+          <h3>Automatische Nachrichten</h3>
+          <p>Schreib deine Nachricht einmal. WohnungFinder personalisiert sie automatisch mit dem Namen des Vermieters und dem Anzeigentitel.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⏰</div>
+          <h3>Zeitplan</h3>
+          <p>Lasse die Automation alle 2 Minuten, stündlich oder täglich laufen – du wirst nie wieder eine neue Wohnung verpassen.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚫</div>
+          <h3>Keine Duplikate</h3>
+          <p>WohnungFinder merkt sich welche Vermieter du bereits kontaktiert hast und überspringt sie automatisch.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3>Premium-Filter</h3>
+          <p>Tauschwohnungen und Neubauprojekte können automatisch ausgeschlossen werden.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📋</div>
+          <h3>Kontakt-History</h3>
+          <p>Sieh alle kontaktierten Anzeigen auf einen Blick – mit Link zum Inserat und Datum der Anfrage.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="section-inner">
+      <p class="section-label">So funktioniert's</p>
+      <h2>In 3 Schritten zur Traumwohnung</h2>
+      <p class="section-sub">Einmal einrichten, dann läuft alles von alleine.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <h3>App herunterladen & installieren</h3>
+            <p>Lade WohnungFinder herunter, ziehe die App in deinen Programme-Ordner und öffne sie.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <h3>Filter & Nachricht konfigurieren</h3>
+            <p>Stelle deine Suchfilter ein, melde dich mit deinem ImmoScout24-Konto an und schreib deine Nachrichtenvorlage.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <h3>Automation starten</h3>
+            <p>Klicke auf "Automation starten" oder aktiviere den Zeitplan – WohnungFinder sendet automatisch Anfragen an passende Inserate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS -->
+  <section class="section" style="background: var(--gray-50);">
+    <div class="section-inner">
+      <p class="section-label">Voraussetzungen</p>
+      <h2>Was du brauchst</h2>
+      <p class="section-sub" style="margin-bottom: 2rem;">WohnungFinder läuft vollständig lokal auf deinem Mac.</p>
+      <div class="reqs">
+        <h3>Systemanforderungen</h3>
+        <div class="req-item"><span class="req-check">✓</span> macOS 12 Monterey oder neuer</div>
+        <div class="req-item"><span class="req-check">✓</span> Google Chrome installiert</div>
+        <div class="req-item"><span class="req-check">✓</span> ImmoScout24-Konto (kostenlos)</div>
+        <div class="req-item"><span class="req-check">✓</span> Internetverbindung</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <section class="cta-section">
+    <h2>Starte deine Wohnungssuche heute</h2>
+    <p>Kostenlos herunterladen. Kein Account, keine Kreditkarte.</p>
+    <a class="btn-white" href="https://github.com/martinPino/immoscout-automation/releases/latest" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Kostenlos herunterladen
+    </a>
+    <p class="cta-meta">Für Mac · Open Source · Keine Datensammlung</p>
+  </section>
+
+  <footer>
+    <p>WohnungFinder · <a href="https://github.com/martinPino/immoscout-automation" target="_blank">GitHub</a> · Nicht offiziell mit ImmobilienScout24 verbunden.</p>
+  </footer>
+
+</body>
+</html>

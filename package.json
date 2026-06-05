@@ -1,7 +1,8 @@
 {
   "name": "immoscout-automation",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,25 +10,97 @@
     "lint": "next lint",
     "chrome": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts --launch-chrome",
     "automation": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts",
-    "automation:dry": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts --dry-run"
+    "automation:dry": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts --dry-run",
+
+    "electron:dev": "concurrently -k -n NEXT,ELECTRON -c cyan,yellow \"next dev -p 3005\" \"wait-on http://localhost:3005 && ELECTRON_DEV_PORT=3005 electron .\"",
+    "electron:compile": "tsc -p electron/tsconfig.json",
+    "electron:build": "npm run build && npm run electron:compile && electron-builder",
+    "electron:build:mac": "npm run build && npm run electron:compile && electron-builder --mac",
+    "electron:pack": "npm run build && npm run electron:compile && electron-builder --dir"
   },
   "dependencies": {
+    "electron-updater": "^6.1.7",
     "next": "14.2.3",
     "node-cron": "^3.0.3",
+    "playwright": "^1.44.0",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0",
-    "@types/node-cron": "^3.0.11",
     "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
-    "playwright": "^1.44.0",
+    "concurrently": "^8.2.2",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.martinpino.immoscout-automation",
+    "productName": "ImmoScout Automation",
+    "copyright": "Copyright © 2024 martinPino",
+    "asar": true,
+    "files": [
+      "dist-electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/.cache/**/*",
+      "!node_modules/.bin/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": ".next/standalone",
+        "to": "app/.next/standalone",
+        "filter": ["**/*"]
+      },
+      {
+        "from": ".next/static",
+        "to": "app/.next/standalone/.next/static",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "public",
+        "to": "app/public",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ],
+      "category": "public.app-category.utilities",
+      "darkModeSupport": true
+    },
+    "dmg": {
+      "title": "ImmoScout Automation ${version}",
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "win": {
+      "target": "nsis",
+      "publisherName": "martinPino"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "martinPino",
+      "repo": "immoscout-automation",
+      "releaseType": "release"
+    }
   }
 }
