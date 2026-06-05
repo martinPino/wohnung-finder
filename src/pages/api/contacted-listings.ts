@@ -3,7 +3,8 @@ import * as fs from "fs";
 import * as path from "path";
 import type { ContactedListing } from "@/types";
 
-const CONTACTED_FILE = path.join(process.cwd(), "contacted.json");
+const DATA_DIR = process.env.IMMOSCOUT_DATA_DIR || process.cwd();
+const CONTACTED_FILE = path.join(DATA_DIR, "contacted.json");
 
 export default function handler(
   req: NextApiRequest,
