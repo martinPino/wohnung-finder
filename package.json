@@ -54,7 +54,13 @@
       "package.json",
       "node_modules/**/*",
       "!node_modules/.cache/**/*",
-      "!node_modules/.bin/**/*"
+      "!node_modules/.bin/**/*",
+      "!contacted.json",
+      "!schedule.json",
+      "!automation-config.json",
+      "!browser-profile/**/*",
+      "!auth-state.json",
+      "!*.log"
     ],
     "extraResources": [
       {
