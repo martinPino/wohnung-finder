@@ -36,6 +36,7 @@ export const DEFAULT_FILTER_TOGGLES: FilterToggles = {
   maxListingAgeDays: true,
   excludeSwapApartments: true,
   excludeNewBuildings: true,
+  exclusiveOnIS24: true,
 };
 
 export const DEFAULT_CREDENTIALS: Credentials = {
