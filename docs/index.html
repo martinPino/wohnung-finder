@@ -286,31 +286,51 @@
     footer a { color: var(--gray-400); }
   /* ── MOBILE ─────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
-    nav { padding: .75rem 1rem; }
-    .nav-cta { font-size: .8rem; padding: .4rem .9rem; }
+    /* Nav */
+    nav { padding: .65rem 1rem; gap: .5rem; }
+    .logo { font-size: 1rem; }
+    .logo img { height: 24px; }
+    .nav-cta { font-size: .75rem; padding: .35rem .75rem; white-space: nowrap; }
 
-    .hero { padding: 3rem 1.25rem 2.5rem; }
-    .hero h1 { font-size: 2rem; }
-    .hero p { font-size: 1rem; }
+    /* Hero */
+    .hero { padding: 2.5rem 1.25rem 2rem; }
+    .hero h1 { font-size: 1.9rem; }
+    .hero p { font-size: .95rem; }
+    .badge { font-size: .75rem; }
     .hero-btns { flex-direction: column; align-items: stretch; }
-    .btn-primary, .btn-secondary { justify-content: center; }
+    .btn-primary, .btn-secondary { justify-content: center; font-size: .9rem; padding: .75rem 1.25rem; }
+    .hero-meta { font-size: .78rem; }
 
-    .screenshot-wrap { padding: 0 1rem; margin-bottom: 3rem; }
+    /* Video/screenshot */
+    .screenshot-wrap { padding: 0 .75rem; margin-bottom: 2.5rem; }
 
-    .section { padding: 3rem 1.25rem; }
-    .section h2 { font-size: 1.6rem; }
-    .section-sub { font-size: .95rem; }
-    .features-grid { grid-template-columns: 1fr; }
+    /* Sections */
+    .section { padding: 2.5rem 1.25rem; }
+    .section h2 { font-size: 1.5rem; }
+    .section-sub { font-size: .9rem; }
+    .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .feature-card { padding: 1.25rem; }
 
+    /* Steps */
+    .steps { padding: 0; }
     .step { gap: 1rem; }
     .step h3 { font-size: .95rem; }
+    .step p { font-size: .85rem; }
 
-    .reqs { padding: 1.25rem; }
+    /* Requirements */
+    .reqs { padding: 1.25rem; margin: 0 0; }
 
-    .cta-section { padding: 3.5rem 1.25rem; }
-    .cta-section h2 { font-size: 1.6rem; }
-    .cta-section p { font-size: .95rem; }
+    /* Donation section */
+    .section-inner[style] { padding: 0 !important; }
+
+    /* CTA bottom */
+    .cta-section { padding: 3rem 1.25rem; }
+    .cta-section h2 { font-size: 1.5rem; }
+    .cta-section p { font-size: .9rem; }
     .btn-white { width: 100%; justify-content: center; }
+
+    /* Footer */
+    footer { font-size: .78rem; padding: 1.5rem 1rem; }
   }
   </style>
 </head>
