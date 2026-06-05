@@ -6,6 +6,7 @@ import MessageForm from "@/components/MessageForm";
 import StatusPanel from "@/components/StatusPanel";
 import ContactedList from "@/components/ContactedList";
 import ScheduleForm from "@/components/ScheduleForm";
+import Onboarding, { useOnboarding } from "@/components/Onboarding";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useLang } from "@/hooks/useLang";
 import { type Lang } from "@/lib/i18n";
@@ -23,6 +24,7 @@ const LANG_LABELS: Record<Lang, string> = { de: "DE", en: "EN", es: "ES" };
 
 export default function Home() {
   const { lang, setLang, t } = useLang();
+  const { show: showOnboarding, complete: completeOnboarding, reopen: reopenOnboarding } = useOnboarding();
   const [activeTab, setActiveTab] = useState<Tab>("filters");
   const [automationState, setAutomationState] = useState<AutomationState>(INITIAL_STATE);
 
@@ -73,17 +75,39 @@ export default function Home() {
       <Head>
         <title>{t.appTitle}</title>
       </Head>
+      {showOnboarding && <Onboarding t={t} onComplete={completeOnboarding} />}
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="mx-auto max-w-5xl">
 
           {/* Header */}
-          <div className="mb-6 flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{t.appTitle}</h1>
-              <p className="mt-1 text-sm text-gray-500">{t.appSubtitle}</p>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">{t.heroTitle}</h1>
+              <p className="mt-2 text-sm text-gray-500 max-w-xl">{t.appSubtitle}</p>
+              <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                {([t.heroBullet1, t.heroBullet2, t.heroBullet3, t.heroBullet4] as string[]).map((b) => (
+                  <li key={b} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <svg className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {b}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Language switcher */}
+            {/* Setup guide + Language switcher */}
+            <div className="flex items-center gap-2">
+            <button
+              onClick={reopenOnboarding}
+              className="flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-gray-500 shadow-sm hover:text-gray-700 hover:bg-gray-50"
+              title={t.onboardingOpenGuide}
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Setup
+            </button>
             <div className="flex items-center gap-1 rounded-lg border bg-white p-1 shadow-sm">
               {(["de", "en", "es"] as Lang[]).map((l) => (
                 <button
@@ -100,6 +124,7 @@ export default function Home() {
                   <span>{LANG_LABELS[l]}</span>
                 </button>
               ))}
+            </div>
             </div>
           </div>
 
