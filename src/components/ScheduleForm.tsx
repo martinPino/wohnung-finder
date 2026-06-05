@@ -21,20 +21,25 @@ export default function ScheduleForm({ t, appConfig }: ScheduleFormProps) {
   const [saving, setSaving] = useState(false);
   const [countdown, setCountdown] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const initializedRef = useRef(false); // only sync intervalMinutes on first load
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (isInitial = false) => {
     try {
       const res = await fetch("/api/schedule");
       const data: ScheduleStatus = await res.json();
       setStatus(data);
       setEnabled(data.enabled);
-      setIntervalMinutes(data.intervalMinutes);
+      // Only update intervalMinutes on initial load — don't overwrite user input
+      if (isInitial || !initializedRef.current) {
+        setIntervalMinutes(data.intervalMinutes);
+        initializedRef.current = true;
+      }
     } catch { /* ignore */ }
   };
 
   useEffect(() => {
-    fetchStatus();
-    pollRef.current = setInterval(fetchStatus, 5000);
+    fetchStatus(true);
+    pollRef.current = setInterval(() => fetchStatus(false), 5000);
     return () => clearInterval(pollRef.current);
   }, []);
 
