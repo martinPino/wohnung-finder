@@ -286,11 +286,11 @@
     footer a { color: var(--gray-400); }
   /* ── MOBILE ─────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
-    /* Nav */
-    nav { padding: .65rem 1rem; gap: .5rem; }
+    /* Nav — hide CTA on mobile, hero already has the download button */
+    nav { padding: .65rem 1rem; }
     .logo { font-size: 1rem; }
     .logo img { height: 24px; }
-    .nav-cta { font-size: .75rem; padding: .35rem .75rem; white-space: nowrap; }
+    .nav-cta { display: none; }
 
     /* Hero */
     .hero { padding: 2.5rem 1.25rem 2rem; }
