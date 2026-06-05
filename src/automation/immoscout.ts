@@ -354,6 +354,7 @@ async function searchListings(
   if (filterToggles.radiusKm)          queryParts.push(`Radius ${filters.radiusKm}km`);
   if (filters.excludeSwapApartments)   queryParts.push("ohne Tauschwohnungen");
   if (filters.excludeNewBuildings)     queryParts.push("ohne Neubauprojekte");
+  if (filters.exclusiveOnIS24)         queryParts.push("nur bei ImmoScout24");
   const smartQuery = queryParts.join(", ");
   log("info", `Smart search query: "${smartQuery}"`);
 

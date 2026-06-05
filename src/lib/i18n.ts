@@ -28,6 +28,7 @@ export const translations = {
     excludeSection: "Ausschließen",
     excludeSwap: "ohne Tauschwohnungen",
     excludeNew: "ohne Neubauprojekte",
+    exclusiveOnIS24: "nur bei ImmoScout24",
     maxRequestsLabel: "Anfragen pro Durchlauf",
     maxRequestsHint: "Wie viele Kontaktanfragen pro Start gesendet werden (Standard: 3).",
 
@@ -105,6 +106,7 @@ export const translations = {
     excludeSection: "Exclude",
     excludeSwap: "without swap apartments",
     excludeNew: "without new construction",
+    exclusiveOnIS24: "only on ImmoScout24",
     maxRequestsLabel: "Requests per run",
     maxRequestsHint: "How many contact requests to send per run (default: 3).",
 
@@ -177,6 +179,7 @@ export const translations = {
     excludeSection: "Excluir",
     excludeSwap: "sin pisos de intercambio",
     excludeNew: "sin obra nueva",
+    exclusiveOnIS24: "solo en ImmoScout24",
     maxRequestsLabel: "Solicitudes por ejecución",
     maxRequestsHint: "Cuántas solicitudes de contacto enviar por ejecución (por defecto: 3).",
 

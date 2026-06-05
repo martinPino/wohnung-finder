@@ -21,6 +21,8 @@ export interface SearchFilters {
   excludeSwapApartments: boolean;
   /** Exclude new construction projects (Neubauprojekte) from results */
   excludeNewBuildings: boolean;
+  /** Only show listings exclusive to ImmoScout24 (?exclusiveonis24=true) */
+  exclusiveOnIS24: boolean;
 }
 
 /** Each filter can be individually enabled/disabled */

@@ -86,8 +86,9 @@ export default function FilterForm({ filters, toggles, onFiltersChange, onToggle
       <div className="mt-2 border-t pt-4 space-y-2">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{t.excludeSection}</p>
         {([
-          { key: "excludeSwapApartments" as const, labelKey: "excludeSwap" as keyof T },
-          { key: "excludeNewBuildings"   as const, labelKey: "excludeNew"  as keyof T },
+          { key: "excludeSwapApartments" as const, labelKey: "excludeSwap"       as keyof T },
+          { key: "excludeNewBuildings"   as const, labelKey: "excludeNew"        as keyof T },
+          { key: "exclusiveOnIS24"       as const, labelKey: "exclusiveOnIS24"   as keyof T },
         ]).map(({ key, labelKey }) => (
           <label key={key} className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700">
             <input

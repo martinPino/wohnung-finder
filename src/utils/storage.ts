@@ -25,6 +25,7 @@ export const DEFAULT_FILTERS: SearchFilters = {
   maxRequestsPerRun: 3,
   excludeSwapApartments: true,
   excludeNewBuildings: true,
+  exclusiveOnIS24: true,
 };
 
 export const DEFAULT_FILTER_TOGGLES: FilterToggles = {
