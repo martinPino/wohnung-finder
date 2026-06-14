@@ -316,7 +316,7 @@ export async function runAutomation(
 // ---------------------------------------------------------------------------
 
 async function verifyLogin(page: Page, log: Logger): Promise<void> {
-  log("info", "Verifying ImmoScout24 session…");
+  log("info", "Verifying session…");
   await page.goto(
     "https://www.immobilienscout24.de/geschlossenerbereich/start.html",
     { waitUntil: "domcontentloaded" }
@@ -330,7 +330,7 @@ async function verifyLogin(page: Page, log: Logger): Promise<void> {
 
   // Not logged in — wait up to 3 minutes for the user to log in manually
   log("warn", "─────────────────────────────────────────────────");
-  log("warn", "Not logged in. Please log in to ImmoScout24");
+  log("warn", "Not logged in. Please log in");
   log("warn", "in the browser window, then wait…");
   log("warn", "─────────────────────────────────────────────────");
 

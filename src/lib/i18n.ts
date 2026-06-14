@@ -5,7 +5,8 @@ export const translations = {
     // App
     appTitle: "WohnungFinder",
     appSubtitle: "WohnungFinder überwacht neue Wohnungen und sendet automatisch deine Anfrage innerhalb von Minuten nach Veröffentlichung.",
-    heroTitle: "Als Erster neue Inserate auf ImmoScout24 kontaktieren",
+    heroTitle: "Als Erster neue Mietwohnungen kontaktieren",
+    compatibleBadge: "Kompatibel mit ImmoScout24",
     heroBullet1: "Automatische Überwachung",
     heroBullet2: "Personalisierte Anfragen",
     heroBullet3: "Keine doppelten Kontakte",
@@ -40,7 +41,6 @@ export const translations = {
 
     // Tabs
     tabFilters: "Suchfilter",
-    tabAccount: "Konto",
     tabMessage: "Nachricht",
     tabContacted: "Kontaktiert",
     tabSchedule: "Zeitplan",
@@ -57,17 +57,11 @@ export const translations = {
     excludeSection: "Ausschließen",
     excludeSwap: "ohne Tauschwohnungen",
     excludeNew: "ohne Neubauprojekte",
-    exclusiveOnIS24: "nur bei ImmoScout24",
+    exclusiveOnIS24: "Nur Exklusiv-Inserate",
     maxRequestsLabel: "Anfragen pro Durchlauf",
     maxRequestsHint: "Wie viele Kontaktanfragen pro Start gesendet werden (Standard: 3).",
 
-    // CredentialsForm
-    accountTitle: "ImmoScout24-Konto",
-    securityNote: "Zugangsdaten werden nur im localStorage gespeichert — nie an einen Server gesendet. Du bist für die Sicherheit deines Geräts verantwortlich.",
-    emailLabel: "E-Mail",
-    passwordLabel: "Passwort",
-    showPassword: "Passwort anzeigen",
-    hidePassword: "Passwort verbergen",
+    // Premium option
     premiumLabel: "Premium-Konto",
     premiumHint: "Auch Premium-Anzeigen kontaktieren (kein Zurückgehen bei Paywall).",
 
@@ -118,7 +112,8 @@ export const translations = {
   en: {
     appTitle: "WohnungFinder",
     appSubtitle: "WohnungFinder monitors new apartments and automatically sends your application within minutes of publication.",
-    heroTitle: "Be the first to contact new listings on ImmoScout24",
+    heroTitle: "Be the first to contact new rental listings",
+    compatibleBadge: "Compatible with ImmoScout24",
     heroBullet1: "Automatic monitoring",
     heroBullet2: "Personalized applications",
     heroBullet3: "No duplicate contacts",
@@ -149,7 +144,6 @@ export const translations = {
     onboardingOpenGuide: "Open setup guide",
 
     tabFilters: "Search filters",
-    tabAccount: "Account",
     tabMessage: "Message",
     tabContacted: "Contacted",
     tabSchedule: "Schedule",
@@ -165,16 +159,10 @@ export const translations = {
     excludeSection: "Exclude",
     excludeSwap: "without swap apartments",
     excludeNew: "without new construction",
-    exclusiveOnIS24: "only on ImmoScout24",
+    exclusiveOnIS24: "Exclusive listings only",
     maxRequestsLabel: "Requests per run",
     maxRequestsHint: "How many contact requests to send per run (default: 3).",
 
-    accountTitle: "ImmoScout24 account",
-    securityNote: "Credentials are stored in your browser's localStorage only — never sent to any server. You are responsible for keeping this device secure.",
-    emailLabel: "Email",
-    passwordLabel: "Password",
-    showPassword: "Show password",
-    hidePassword: "Hide password",
     premiumLabel: "Premium account",
     premiumHint: "Also contact premium listings (no going back on paywall).",
 
@@ -221,7 +209,8 @@ export const translations = {
   es: {
     appTitle: "WohnungFinder",
     appSubtitle: "WohnungFinder monitoriza nuevos pisos y envía automáticamente tu solicitud en minutos tras la publicación.",
-    heroTitle: "Sé el primero en contactar nuevos anuncios en ImmoScout24",
+    heroTitle: "Sé el primero en contactar nuevos anuncios de alquiler",
+    compatibleBadge: "Compatible con ImmoScout24",
     heroBullet1: "Monitorización automática",
     heroBullet2: "Solicitudes personalizadas",
     heroBullet3: "Sin contactos duplicados",
@@ -252,7 +241,6 @@ export const translations = {
     running: "Ejecutando…",
 
     tabFilters: "Filtros",
-    tabAccount: "Cuenta",
     tabMessage: "Mensaje",
     tabContacted: "Contactados",
     tabSchedule: "Programar",
@@ -268,16 +256,10 @@ export const translations = {
     excludeSection: "Excluir",
     excludeSwap: "sin pisos de intercambio",
     excludeNew: "sin obra nueva",
-    exclusiveOnIS24: "solo en ImmoScout24",
+    exclusiveOnIS24: "Solo anuncios exclusivos",
     maxRequestsLabel: "Solicitudes por ejecución",
     maxRequestsHint: "Cuántas solicitudes de contacto enviar por ejecución (por defecto: 3).",
 
-    accountTitle: "Cuenta ImmoScout24",
-    securityNote: "Las credenciales se guardan solo en localStorage — nunca se envían a ningún servidor. Eres responsable de la seguridad de este dispositivo.",
-    emailLabel: "Correo electrónico",
-    passwordLabel: "Contraseña",
-    showPassword: "Mostrar contraseña",
-    hidePassword: "Ocultar contraseña",
     premiumLabel: "Cuenta premium",
     premiumHint: "También contactar anuncios premium (sin volver atrás en el paywall).",
 

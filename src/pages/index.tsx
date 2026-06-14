@@ -87,6 +87,9 @@ export default function Home() {
           <div className="mb-6 flex items-start justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900 leading-tight">{t.heroTitle}</h1>
+              <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                {t.compatibleBadge}
+              </span>
               <p className="mt-2 text-sm text-gray-500 max-w-xl">{t.appSubtitle}</p>
               <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
                 {([t.heroBullet1, t.heroBullet2, t.heroBullet3, t.heroBullet4] as string[]).map((b) => (
