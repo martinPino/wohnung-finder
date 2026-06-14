@@ -81,7 +81,7 @@ async function triggerAutomation(): Promise<void> {
   scheduleNextRun();
 
   try {
-    const configPath = path.join(process.cwd(), "automation-config.json");
+    const configPath = path.join(DATA_DIR, "automation-config.json");
     if (!fs.existsSync(configPath)) {
       g.lastRunResult = "Error: automation-config.json not found. Save config from the Schedule tab first.";
       return;

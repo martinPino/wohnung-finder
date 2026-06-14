@@ -16,6 +16,7 @@
     "electron:compile": "tsc -p electron/tsconfig.json",
     "electron:build": "npm run build && npm run electron:compile && electron-builder",
     "electron:build:mac": "npm run build && npm run electron:compile && electron-builder --mac",
+    "electron:build:win": "npm run build && npm run electron:compile && electron-builder --win",
     "electron:pack": "npm run build && npm run electron:compile && electron-builder --dir"
   },
   "dependencies": {
@@ -93,7 +94,7 @@
       ],
       "category": "public.app-category.utilities",
       "darkModeSupport": true,
-      "icon": "public/logo.png"
+      "icon": "public/icon.png"
     },
     "dmg": {
       "title": "ImmoScout Automation ${version}",
@@ -104,7 +105,8 @@
     },
     "win": {
       "target": "nsis",
-      "publisherName": "martinPino"
+      "publisherName": "martinPino",
+      "icon": "public/icon.png"
     },
     "nsis": {
       "oneClick": true,

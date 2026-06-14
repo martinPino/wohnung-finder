@@ -31,8 +31,42 @@ const CDP_URL = `http://localhost:${CDP_PORT}`;
 const DATA_DIR = process.env.IMMOSCOUT_DATA_DIR || process.cwd();
 const CONTACTED_FILE = path.join(DATA_DIR, "contacted.json");
 const BROWSER_PROFILE_DIR = path.join(DATA_DIR, "browser-profile");
-const CHROME_PATH =
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+
+// Locate the installed Google Chrome executable across platforms.
+// Returns null if Chrome can't be found in any of the usual locations.
+function findChromeExecutable(): string | null {
+  const candidates: string[] = [];
+
+  if (process.platform === "darwin") {
+    candidates.push(
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    );
+  } else if (process.platform === "win32") {
+    const programFiles = process.env["PROGRAMFILES"] || "C:\\Program Files";
+    const programFilesX86 =
+      process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)";
+    const localAppData = process.env["LOCALAPPDATA"];
+    candidates.push(
+      path.join(programFiles, "Google", "Chrome", "Application", "chrome.exe"),
+      path.join(programFilesX86, "Google", "Chrome", "Application", "chrome.exe")
+    );
+    if (localAppData) {
+      candidates.push(
+        path.join(localAppData, "Google", "Chrome", "Application", "chrome.exe")
+      );
+    }
+  } else {
+    // Linux
+    candidates.push(
+      "/usr/bin/google-chrome",
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser"
+    );
+  }
+
+  return candidates.find((p) => fs.existsSync(p)) ?? null;
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -92,13 +126,19 @@ export async function launchChromeWithDebugging(): Promise<void> {
   console.log("Opening a second Chrome window for automation (existing tabs are NOT affected)…");
 
   // Use a dedicated profile dir so this instance is independent of your main Chrome.
-  // -n opens a new instance even if Chrome is already running.
+  // Launching the binary directly with a dedicated --user-data-dir starts an
+  // independent instance even if Chrome is already running (all platforms).
   const profileDir = BROWSER_PROFILE_DIR;
   if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir, { recursive: true });
 
-  spawn("open", [
-    "-n", "-a", "Google Chrome",
-    "--args",
+  const chromePath = findChromeExecutable();
+  if (!chromePath) {
+    throw new Error(
+      "Google Chrome not found. Please install Chrome (https://www.google.com/chrome/) and try again."
+    );
+  }
+
+  spawn(chromePath, [
     `--remote-debugging-port=${CDP_PORT}`,
     `--user-data-dir=${profileDir}`,
     "--remote-allow-origins=*",   // required for full CDP support (setDownloadBehavior etc.)
@@ -116,8 +156,8 @@ export async function launchChromeWithDebugging(): Promise<void> {
     process.stdout.write(".");
   }
 
-  console.error("\n✗ Chrome did not start. Try manually:");
-  console.error(`  open -n -a "Google Chrome" --args --remote-debugging-port=${CDP_PORT} --user-data-dir="${profileDir}"`);
+  console.error("\n✗ Chrome did not start. Try launching it manually with:");
+  console.error(`  "${chromePath}" --remote-debugging-port=${CDP_PORT} --user-data-dir="${profileDir}"`);
   process.exit(1);
 }
 

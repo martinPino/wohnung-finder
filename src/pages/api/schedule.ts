@@ -27,7 +27,8 @@ export default async function handler(
     if (appConfig) {
       const fs = await import("fs");
       const path = await import("path");
-      const configPath = path.join(process.cwd(), "automation-config.json");
+      const dataDir = process.env.IMMOSCOUT_DATA_DIR || process.cwd();
+      const configPath = path.join(dataDir, "automation-config.json");
       fs.writeFileSync(configPath, JSON.stringify(appConfig, null, 2));
     }
 
