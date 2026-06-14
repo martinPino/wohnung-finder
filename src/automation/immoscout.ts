@@ -589,6 +589,10 @@ async function contactLandlord(
     log("info", "Message filled.");
   }
 
+  // Required "Haustiere" (pets) dropdown — fill it from the user's choice
+  const petsChoice = config.contactMessage.pets ?? "nein";
+  await selectPetsField(page, petsChoice, log);
+
   // Scroll "Abschicken" into view and click
   const abschicken = page.locator('button:has-text("Abschicken")').first();
   await abschicken.scrollIntoViewIfNeeded();
@@ -670,6 +674,74 @@ async function dismissCookieBanner(page: Page, log: Logger): Promise<void> {
 function extractExposeId(url: string): string | null {
   const m = url.match(/\/expose\/(\d+)/);
   return m ? m[1] : null;
+}
+
+/**
+ * Fills the required "Haustiere" (pets) dropdown in the contact form with the
+ * user's choice. ImmoScout renders this either as a native <select> or as a
+ * custom combobox, so we try several strategies. Best-effort: logs a warning
+ * if the field can't be found (some listings don't show it).
+ */
+async function selectPetsField(
+  page: Page,
+  choice: "ja" | "nein",
+  log: Logger
+): Promise<void> {
+  const optionText = choice === "ja" ? "Ja" : "Nein";
+
+  // Strategy 1 — ImmoScout's native <select name="hasPets"> (current markup)
+  try {
+    const direct = page.locator('select[name="hasPets"]').first();
+    if (await direct.count()) {
+      await direct.selectOption({ label: optionText });
+      log("info", `Haustiere (hasPets) → ${optionText} ✓`);
+      return;
+    }
+  } catch { /* fall through */ }
+
+  // Strategy 2 — any <select> whose options include both Ja and Nein
+  try {
+    const selects = page.locator("select");
+    const count = await selects.count();
+    for (let i = 0; i < count; i++) {
+      const s = selects.nth(i);
+      const opts = (await s.locator("option").allInnerTexts()).map((t) =>
+        t.trim().toLowerCase()
+      );
+      if (opts.includes("ja") && opts.includes("nein")) {
+        await s.selectOption({ label: optionText });
+        log("info", `Haustiere → ${optionText} ✓`);
+        return;
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Strategy 3 — custom combobox: open the control near the "Haustiere" label,
+  // then click the matching option.
+  try {
+    const container = page
+      .locator(
+        'div:has(> label:has-text("Haustiere")), [class*="select"]:near(:text("Haustiere"))'
+      )
+      .first();
+    const control = container
+      .locator('[role="combobox"], button, [class*="trigger"], input')
+      .first();
+    if (await control.count()) {
+      await control.click();
+      await page.waitForTimeout(300);
+      const option = page
+        .locator(`[role="option"]:has-text("${optionText}"), li:has-text("${optionText}")`)
+        .first();
+      if (await option.count()) {
+        await option.click();
+        log("info", `Haustiere → ${optionText} ✓`);
+        return;
+      }
+    }
+  } catch { /* fall through */ }
+
+  log("warn", `Haustiere field not found — leaving it untouched.`);
 }
 
 async function randomDelay(page: Page, min: number, max: number): Promise<void> {

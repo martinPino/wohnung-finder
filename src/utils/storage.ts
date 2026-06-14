@@ -52,6 +52,7 @@ export const DEFAULT_CONTACT_MESSAGE: ContactMessage = {
 ich bin sehr an Ihrer Wohnung "{listingTitle}" interessiert und würde mich über einen Besichtigungstermin freuen.
 
 Mit freundlichen Grüßen`,
+  pets: "nein",
 };
 
 export const DEFAULT_APP_CONFIG: AppConfig = {

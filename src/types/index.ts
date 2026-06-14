@@ -51,6 +51,11 @@ export interface ContactMessage {
   subject: string;
   /** Body text; supports {listingTitle} and {landlordName} placeholders */
   body: string;
+  /**
+   * Answer for the required "Haustiere" (pets) dropdown in the contact form.
+   * "ja" = yes (has pets), "nein" = no. Defaults to "nein".
+   */
+  pets: "ja" | "nein";
 }
 
 // ---------------------------------------------------------------------------

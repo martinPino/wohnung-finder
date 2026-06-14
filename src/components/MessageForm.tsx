@@ -8,8 +8,9 @@ interface MessageFormProps {
 }
 
 export default function MessageForm({ message, onChange, t }: MessageFormProps) {
-  const set = <K extends keyof ContactMessage>(key: K, value: string) =>
+  const set = (key: "subject" | "body", value: string) =>
     onChange({ ...message, [key]: value });
+  const pets: "ja" | "nein" = message.pets ?? "nein";
 
   return (
     <div className="space-y-4">
@@ -39,6 +40,18 @@ export default function MessageForm({ message, onChange, t }: MessageFormProps) 
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
         />
         <p className="mt-1 text-xs text-gray-400">{message.body.length} {t.chars}</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">{t.petsLabel}</label>
+        <select
+          value={pets}
+          onChange={(e) => onChange({ ...message, pets: e.target.value as "ja" | "nein" })}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <option value="nein">{t.petsNo}</option>
+          <option value="ja">{t.petsYes}</option>
+        </select>
+        <p className="mt-1 text-xs text-gray-400">{t.petsHint}</p>
       </div>
     </div>
   );

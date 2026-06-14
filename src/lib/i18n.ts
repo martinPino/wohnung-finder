@@ -77,6 +77,10 @@ export const translations = {
     subjectLabel: "Betreff",
     bodyLabel: "Nachricht",
     chars: "Zeichen",
+    petsLabel: "Haustiere",
+    petsHint: "Antwort für das Pflichtfeld \"Haustiere\" im Kontaktformular.",
+    petsYes: "Ja",
+    petsNo: "Nein",
 
     // StatusPanel
     statusTitle: "Status",
@@ -179,6 +183,10 @@ export const translations = {
     subjectLabel: "Subject",
     bodyLabel: "Message",
     chars: "characters",
+    petsLabel: "Pets (Haustiere)",
+    petsHint: "Answer for the required \"Haustiere\" (pets) field in the contact form.",
+    petsYes: "Yes",
+    petsNo: "No",
 
     statusTitle: "Status",
     statusIdle: "Idle",
@@ -278,6 +286,10 @@ export const translations = {
     subjectLabel: "Asunto",
     bodyLabel: "Mensaje",
     chars: "caracteres",
+    petsLabel: "Mascotas (Haustiere)",
+    petsHint: "Respuesta para el campo obligatorio \"Haustiere\" (mascotas) del formulario de contacto.",
+    petsYes: "Sí",
+    petsNo: "No",
 
     statusTitle: "Estado",
     statusIdle: "En espera",
