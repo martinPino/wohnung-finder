@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import FilterForm from "@/components/FilterForm";
 import MessageForm from "@/components/MessageForm";
@@ -31,6 +31,12 @@ export default function Home() {
   const [filterToggles, setFilterToggles] = useLocalStorage(STORAGE_KEYS.FILTER_TOGGLES, DEFAULT_FILTER_TOGGLES);
   const [credentials, setCredentials] = useLocalStorage(STORAGE_KEYS.CREDENTIALS, DEFAULT_CREDENTIALS);
   const [contactMessage, setContactMessage] = useLocalStorage(STORAGE_KEYS.CONTACT_MESSAGE, DEFAULT_CONTACT_MESSAGE);
+
+  // One-time migration: drop legacy email/password fields that older versions
+  // stored in localStorage; only isPremiumAccount is used now.
+  useEffect(() => {
+    setCredentials((prev) => ({ isPremiumAccount: prev.isPremiumAccount }));
+  }, [setCredentials]);
 
   const addLog = (level: AutomationState["logs"][number]["level"], message: string) => {
     const timestamp = new Date().toLocaleTimeString();
