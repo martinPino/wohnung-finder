@@ -46,6 +46,7 @@
       z-index: 100;
     }
     .logo { font-size: 1.25rem; font-weight: 700; color: var(--blue); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
     .nav-cta {
       background: var(--blue);
       color: #fff;
@@ -57,6 +58,25 @@
       transition: background .15s;
     }
     .nav-cta:hover { background: var(--blue-dark); }
+
+    /* LANGUAGE SWITCHER */
+    .lang-switch { display: flex; gap: .25rem; background: var(--gray-100); padding: .2rem; border-radius: 8px; }
+    .lang-switch button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: .3rem .55rem;
+      border-radius: 6px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      transition: background .15s, color .15s;
+    }
+    .lang-switch button:hover { color: var(--gray-900); }
+    .lang-switch button.active { background: var(--blue); color: #fff; }
 
     /* HERO */
     .hero {
@@ -291,6 +311,7 @@
     .logo { font-size: 1rem; }
     .logo img { height: 24px; }
     .nav-cta { display: none; }
+    .lang-switch button { padding: .3rem .45rem; font-size: .75rem; }
 
     /* Hero */
     .hero { padding: 2.5rem 1.25rem 2rem; }
@@ -342,25 +363,32 @@
       <img src="logo.png" alt="WohnungFinder" style="height:32px;width:auto;" />
       WohnungFinder
     </a>
-    <a class="nav-cta" href="https://schwarzboeck7.gumroad.com/l/sgotr" target="_blank">Kostenlos herunterladen</a>
+    <div class="nav-right">
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="de" type="button"><span>🇩🇪</span><span>DE</span></button>
+        <button data-lang="en" type="button"><span>🇬🇧</span><span>EN</span></button>
+        <button data-lang="es" type="button"><span>🇪🇸</span><span>ES</span></button>
+      </div>
+      <a class="nav-cta" href="https://schwarzboeck7.gumroad.com/l/sgotr" target="_blank" data-i18n="nav_cta">Kostenlos herunterladen</a>
+    </div>
   </nav>
 
   <!-- HERO -->
   <section class="hero">
-    <div class="badge">Kostenlos · Nur für Mac</div>
-    <h1>Wohnungssuche auf <span>Autopilot</span></h1>
-    <p>WohnungFinder sendet automatisch Kontaktanfragen – mit deinen Filtern, deiner Nachricht, rund um die Uhr. Kompatibel mit ImmoScout24.</p>
+    <div class="badge" data-i18n="hero_badge">Kostenlos · Nur für Mac</div>
+    <h1 data-i18n-html="hero_h1">Wohnungssuche auf <span>Autopilot</span></h1>
+    <p data-i18n="hero_p">WohnungFinder sendet automatisch Kontaktanfragen – mit deinen Filtern, deiner Nachricht, rund um die Uhr. Kompatibel mit ImmoScout24.</p>
     <div class="hero-btns">
       <a class="btn-primary" href="https://schwarzboeck7.gumroad.com/l/sgotr" target="_blank">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Für Mac herunterladen
+        <span data-i18n="hero_btn_primary">Für Mac herunterladen</span>
       </a>
       <a class="btn-secondary" href="https://github.com/martinPino/immoscout-automation" target="_blank">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
         GitHub
       </a>
     </div>
-    <p class="hero-meta">macOS 12+ · Kostenlos · Google Chrome erforderlich</p>
+    <p class="hero-meta" data-i18n="hero_meta">macOS 12+ · Kostenlos · Google Chrome erforderlich</p>
   </section>
 
   <!-- SCREENSHOT -->
@@ -379,39 +407,39 @@
   <!-- FEATURES -->
   <section class="section" style="background: var(--gray-50);">
     <div class="section-inner">
-      <p class="section-label">Features</p>
-      <h2>Alles was du brauchst</h2>
-      <p class="section-sub">Konfiguriere einmal, lass WohnungFinder den Rest erledigen.</p>
+      <p class="section-label" data-i18n="feat_label">Features</p>
+      <h2 data-i18n="feat_h2">Alles was du brauchst</h2>
+      <p class="section-sub" data-i18n="feat_sub">Konfiguriere einmal, lass WohnungFinder den Rest erledigen.</p>
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🔍</div>
-          <h3>Intelligente Filter</h3>
-          <p>Stadt, Radius, Maximalmiete, Mindestgröße, Zimmeranzahl – alle wichtigen Filter, in einer App.</p>
+          <h3 data-i18n="feat1_h3">Intelligente Filter</h3>
+          <p data-i18n="feat1_p">Stadt, Radius, Maximalmiete, Mindestgröße, Zimmeranzahl – alle wichtigen Filter, in einer App.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">✉️</div>
-          <h3>Automatische Nachrichten</h3>
-          <p>Schreib deine Nachricht einmal. WohnungFinder personalisiert sie automatisch mit dem Namen des Vermieters und dem Anzeigentitel.</p>
+          <h3 data-i18n="feat2_h3">Automatische Nachrichten</h3>
+          <p data-i18n="feat2_p">Schreib deine Nachricht einmal. WohnungFinder personalisiert sie automatisch mit dem Namen des Vermieters und dem Anzeigentitel.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">⏰</div>
-          <h3>Zeitplan</h3>
-          <p>Lasse die Automation alle 2 Minuten, stündlich oder täglich laufen – du wirst nie wieder eine neue Wohnung verpassen.</p>
+          <h3 data-i18n="feat3_h3">Zeitplan</h3>
+          <p data-i18n="feat3_p">Lasse die Automation alle 2 Minuten, stündlich oder täglich laufen – du wirst nie wieder eine neue Wohnung verpassen.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">🚫</div>
-          <h3>Keine Duplikate</h3>
-          <p>WohnungFinder merkt sich welche Vermieter du bereits kontaktiert hast und überspringt sie automatisch.</p>
+          <h3 data-i18n="feat4_h3">Keine Duplikate</h3>
+          <p data-i18n="feat4_p">WohnungFinder merkt sich welche Vermieter du bereits kontaktiert hast und überspringt sie automatisch.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">⭐</div>
-          <h3>Premium-Filter</h3>
-          <p>Tauschwohnungen und Neubauprojekte können automatisch ausgeschlossen werden.</p>
+          <h3 data-i18n="feat5_h3">Premium-Filter</h3>
+          <p data-i18n="feat5_p">Tauschwohnungen und Neubauprojekte können automatisch ausgeschlossen werden.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">📋</div>
-          <h3>Kontakt-History</h3>
-          <p>Sieh alle kontaktierten Anzeigen auf einen Blick – mit Link zum Inserat und Datum der Anfrage.</p>
+          <h3 data-i18n="feat6_h3">Kontakt-History</h3>
+          <p data-i18n="feat6_p">Sieh alle kontaktierten Anzeigen auf einen Blick – mit Link zum Inserat und Datum der Anfrage.</p>
         </div>
       </div>
     </div>
@@ -420,29 +448,29 @@
   <!-- HOW IT WORKS -->
   <section class="section">
     <div class="section-inner">
-      <p class="section-label">So funktioniert's</p>
-      <h2>In 3 Schritten zur Traumwohnung</h2>
-      <p class="section-sub">Einmal einrichten, dann läuft alles von alleine.</p>
+      <p class="section-label" data-i18n="how_label">So funktioniert's</p>
+      <h2 data-i18n="how_h2">In 3 Schritten zur Traumwohnung</h2>
+      <p class="section-sub" data-i18n="how_sub">Einmal einrichten, dann läuft alles von alleine.</p>
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <div>
-            <h3>App herunterladen & installieren</h3>
-            <p>Lade WohnungFinder herunter und ziehe die App in deinen Programme-Ordner. Beim ersten Start: <strong>Rechtsklick → Öffnen → Öffnen</strong> (macOS Sicherheitsabfrage einmalig bestätigen).</p>
+            <h3 data-i18n="step1_h3">App herunterladen & installieren</h3>
+            <p data-i18n-html="step1_p">Lade WohnungFinder herunter und ziehe die App in deinen Programme-Ordner. Beim ersten Start: <strong>Rechtsklick → Öffnen → Öffnen</strong> (macOS Sicherheitsabfrage einmalig bestätigen).</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">2</div>
           <div>
-            <h3>Filter & Nachricht konfigurieren</h3>
-            <p>Stelle deine Suchfilter ein, melde dich mit deinem ImmoScout24-Konto an und schreib deine Nachrichtenvorlage.</p>
+            <h3 data-i18n="step2_h3">Filter & Nachricht konfigurieren</h3>
+            <p data-i18n="step2_p">Stelle deine Suchfilter ein, melde dich mit deinem ImmoScout24-Konto an und schreib deine Nachrichtenvorlage.</p>
           </div>
         </div>
         <div class="step">
           <div class="step-num">3</div>
           <div>
-            <h3>Automation starten</h3>
-            <p>Klicke auf "Automation starten" oder aktiviere den Zeitplan – WohnungFinder sendet automatisch Anfragen an passende Inserate.</p>
+            <h3 data-i18n="step3_h3">Automation starten</h3>
+            <p data-i18n="step3_p">Klicke auf "Automation starten" oder aktiviere den Zeitplan – WohnungFinder sendet automatisch Anfragen an passende Inserate.</p>
           </div>
         </div>
       </div>
@@ -452,15 +480,15 @@
   <!-- REQUIREMENTS -->
   <section class="section" style="background: var(--gray-50);">
     <div class="section-inner">
-      <p class="section-label">Voraussetzungen</p>
-      <h2>Was du brauchst</h2>
-      <p class="section-sub" style="margin-bottom: 2rem;">WohnungFinder läuft vollständig lokal auf deinem Mac.</p>
+      <p class="section-label" data-i18n="req_label">Voraussetzungen</p>
+      <h2 data-i18n="req_h2">Was du brauchst</h2>
+      <p class="section-sub" style="margin-bottom: 2rem;" data-i18n="req_sub">WohnungFinder läuft vollständig lokal auf deinem Mac.</p>
       <div class="reqs">
-        <h3>Systemanforderungen</h3>
-        <div class="req-item"><span class="req-check">✓</span> macOS 12 Monterey oder neuer</div>
-        <div class="req-item"><span class="req-check">✓</span> Google Chrome installiert</div>
-        <div class="req-item"><span class="req-check">✓</span> ImmoScout24-Konto (kostenlos)</div>
-        <div class="req-item"><span class="req-check">✓</span> Internetverbindung</div>
+        <h3 data-i18n="req_h3">Systemanforderungen</h3>
+        <div class="req-item"><span class="req-check">✓</span> <span data-i18n="req1">macOS 12 Monterey oder neuer</span></div>
+        <div class="req-item"><span class="req-check">✓</span> <span data-i18n="req2">Google Chrome installiert</span></div>
+        <div class="req-item"><span class="req-check">✓</span> <span data-i18n="req3">ImmoScout24-Konto (kostenlos)</span></div>
+        <div class="req-item"><span class="req-check">✓</span> <span data-i18n="req4">Internetverbindung</span></div>
       </div>
     </div>
   </section>
@@ -469,17 +497,17 @@
   <section class="section">
     <div class="section-inner" style="text-align:center;max-width:600px;margin:0 auto;">
       <div style="font-size:2.5rem;margin-bottom:1rem;">☕</div>
-      <h2 style="margin-bottom:.75rem;">WohnungFinder gefällt dir?</h2>
-      <p style="color:var(--gray-600);margin-bottom:2rem;font-size:1.05rem;">
+      <h2 style="margin-bottom:.75rem;" data-i18n="donate_h2">WohnungFinder gefällt dir?</h2>
+      <p style="color:var(--gray-600);margin-bottom:2rem;font-size:1.05rem;" data-i18n="donate_p">
         Die App ist kostenlos und bleibt es auch. Wenn sie dir bei der Wohnungssuche geholfen hat,
         freue ich mich über eine kleine Unterstützung — damit ich weiter daran arbeiten kann.
       </p>
       <a href="https://schwarzboeck7.gumroad.com/l/sgotr" target="_blank"
         style="display:inline-flex;align-items:center;gap:.6rem;background:#ff90e8;color:#000;padding:.85rem 2rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1rem;transition:opacity .15s;"
-        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'" data-i18n="donate_btn">
         ☕ Einen Kaffee spendieren
       </a>
-      <p style="margin-top:1rem;font-size:.85rem;color:var(--gray-400);">
+      <p style="margin-top:1rem;font-size:.85rem;color:var(--gray-400);" data-i18n="donate_meta">
         Über Gumroad · Jeder Betrag hilft · Vollkommen freiwillig
       </p>
     </div>
@@ -487,18 +515,212 @@
 
   <!-- BOTTOM CTA -->
   <section class="cta-section">
-    <h2>Starte deine Wohnungssuche heute</h2>
-    <p>Kostenlos herunterladen. Kein Account, keine Kreditkarte.</p>
+    <h2 data-i18n="cta_h2">Starte deine Wohnungssuche heute</h2>
+    <p data-i18n="cta_p">Kostenlos herunterladen. Kein Account, keine Kreditkarte.</p>
     <a class="btn-white" href="https://schwarzboeck7.gumroad.com/l/sgotr" target="_blank">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Kostenlos herunterladen
+      <span data-i18n="cta_btn">Kostenlos herunterladen</span>
     </a>
-    <p class="cta-meta">Für Mac · Open Source · Keine Datensammlung</p>
+    <p class="cta-meta" data-i18n="cta_meta">Für Mac · Open Source · Keine Datensammlung</p>
   </section>
 
   <footer>
-    <p>WohnungFinder · <a href="https://github.com/martinPino/immoscout-automation" target="_blank">GitHub</a> · Kompatibel mit ImmoScout24, aber kein offizielles Produkt und nicht mit der ImmobilienScout GmbH verbunden. ImmoScout24® ist eine eingetragene Marke ihrer jeweiligen Inhaber.</p>
+    <p data-i18n-html="footer_text">WohnungFinder · <a href="https://github.com/martinPino/immoscout-automation" target="_blank">GitHub</a> · Kompatibel mit ImmoScout24, aber kein offizielles Produkt und nicht mit der ImmobilienScout GmbH verbunden. ImmoScout24® ist eine eingetragene Marke ihrer jeweiligen Inhaber.</p>
   </footer>
+
+  <script>
+    var GH = '<a href="https://github.com/martinPino/immoscout-automation" target="_blank">GitHub</a>';
+    var I18N = {
+      de: {
+        _title: "WohnungFinder – Mietwohnungen automatisch anfragen (kompatibel mit ImmoScout24)",
+        _desc: "WohnungFinder automatisiert deine Wohnungssuche. Filtere, finde und kontaktiere Vermieter automatisch – kompatibel mit ImmoScout24, kostenlos für Mac.",
+        nav_cta: "Kostenlos herunterladen",
+        hero_badge: "Kostenlos · Nur für Mac",
+        hero_h1: 'Wohnungssuche auf <span>Autopilot</span>',
+        hero_p: "WohnungFinder sendet automatisch Kontaktanfragen – mit deinen Filtern, deiner Nachricht, rund um die Uhr. Kompatibel mit ImmoScout24.",
+        hero_btn_primary: "Für Mac herunterladen",
+        hero_meta: "macOS 12+ · Kostenlos · Google Chrome erforderlich",
+        feat_label: "Features",
+        feat_h2: "Alles was du brauchst",
+        feat_sub: "Konfiguriere einmal, lass WohnungFinder den Rest erledigen.",
+        feat1_h3: "Intelligente Filter",
+        feat1_p: "Stadt, Radius, Maximalmiete, Mindestgröße, Zimmeranzahl – alle wichtigen Filter, in einer App.",
+        feat2_h3: "Automatische Nachrichten",
+        feat2_p: "Schreib deine Nachricht einmal. WohnungFinder personalisiert sie automatisch mit dem Namen des Vermieters und dem Anzeigentitel.",
+        feat3_h3: "Zeitplan",
+        feat3_p: "Lasse die Automation alle 2 Minuten, stündlich oder täglich laufen – du wirst nie wieder eine neue Wohnung verpassen.",
+        feat4_h3: "Keine Duplikate",
+        feat4_p: "WohnungFinder merkt sich welche Vermieter du bereits kontaktiert hast und überspringt sie automatisch.",
+        feat5_h3: "Premium-Filter",
+        feat5_p: "Tauschwohnungen und Neubauprojekte können automatisch ausgeschlossen werden.",
+        feat6_h3: "Kontakt-History",
+        feat6_p: "Sieh alle kontaktierten Anzeigen auf einen Blick – mit Link zum Inserat und Datum der Anfrage.",
+        how_label: "So funktioniert's",
+        how_h2: "In 3 Schritten zur Traumwohnung",
+        how_sub: "Einmal einrichten, dann läuft alles von alleine.",
+        step1_h3: "App herunterladen & installieren",
+        step1_p: "Lade WohnungFinder herunter und ziehe die App in deinen Programme-Ordner. Beim ersten Start: <strong>Rechtsklick → Öffnen → Öffnen</strong> (macOS Sicherheitsabfrage einmalig bestätigen).",
+        step2_h3: "Filter & Nachricht konfigurieren",
+        step2_p: "Stelle deine Suchfilter ein, melde dich mit deinem ImmoScout24-Konto an und schreib deine Nachrichtenvorlage.",
+        step3_h3: "Automation starten",
+        step3_p: 'Klicke auf "Automation starten" oder aktiviere den Zeitplan – WohnungFinder sendet automatisch Anfragen an passende Inserate.',
+        req_label: "Voraussetzungen",
+        req_h2: "Was du brauchst",
+        req_sub: "WohnungFinder läuft vollständig lokal auf deinem Mac.",
+        req_h3: "Systemanforderungen",
+        req1: "macOS 12 Monterey oder neuer",
+        req2: "Google Chrome installiert",
+        req3: "ImmoScout24-Konto (kostenlos)",
+        req4: "Internetverbindung",
+        donate_h2: "WohnungFinder gefällt dir?",
+        donate_p: "Die App ist kostenlos und bleibt es auch. Wenn sie dir bei der Wohnungssuche geholfen hat, freue ich mich über eine kleine Unterstützung — damit ich weiter daran arbeiten kann.",
+        donate_btn: "☕ Einen Kaffee spendieren",
+        donate_meta: "Über Gumroad · Jeder Betrag hilft · Vollkommen freiwillig",
+        cta_h2: "Starte deine Wohnungssuche heute",
+        cta_p: "Kostenlos herunterladen. Kein Account, keine Kreditkarte.",
+        cta_btn: "Kostenlos herunterladen",
+        cta_meta: "Für Mac · Open Source · Keine Datensammlung",
+        footer_text: "WohnungFinder · " + GH + " · Kompatibel mit ImmoScout24, aber kein offizielles Produkt und nicht mit der ImmobilienScout GmbH verbunden. ImmoScout24® ist eine eingetragene Marke ihrer jeweiligen Inhaber."
+      },
+      en: {
+        _title: "WohnungFinder – Contact rental listings automatically (compatible with ImmoScout24)",
+        _desc: "WohnungFinder automates your apartment search. Filter, find and contact landlords automatically – compatible with ImmoScout24, free for Mac.",
+        nav_cta: "Download free",
+        hero_badge: "Free · Mac only",
+        hero_h1: 'Apartment hunting on <span>autopilot</span>',
+        hero_p: "WohnungFinder automatically sends contact requests — with your filters, your message, around the clock. Compatible with ImmoScout24.",
+        hero_btn_primary: "Download for Mac",
+        hero_meta: "macOS 12+ · Free · Google Chrome required",
+        feat_label: "Features",
+        feat_h2: "Everything you need",
+        feat_sub: "Set it up once, let WohnungFinder do the rest.",
+        feat1_h3: "Smart filters",
+        feat1_p: "City, radius, max rent, minimum size, number of rooms — all the key filters, in one app.",
+        feat2_h3: "Automatic messages",
+        feat2_p: "Write your message once. WohnungFinder personalizes it automatically with the landlord's name and the listing title.",
+        feat3_h3: "Schedule",
+        feat3_p: "Run the automation every 2 minutes, hourly or daily — so you never miss a new apartment again.",
+        feat4_h3: "No duplicates",
+        feat4_p: "WohnungFinder remembers which landlords you've already contacted and skips them automatically.",
+        feat5_h3: "Premium filters",
+        feat5_p: "Swap apartments and new-construction projects can be excluded automatically.",
+        feat6_h3: "Contact history",
+        feat6_p: "See every contacted listing at a glance — with a link to the listing and the date of the request.",
+        how_label: "How it works",
+        how_h2: "Your dream apartment in 3 steps",
+        how_sub: "Set it up once, then everything runs by itself.",
+        step1_h3: "Download & install the app",
+        step1_p: "Download WohnungFinder and drag the app into your Applications folder. On first launch: <strong>right-click → Open → Open</strong> (confirm the macOS security prompt once).",
+        step2_h3: "Configure filters & message",
+        step2_p: "Set your search filters, log in with your ImmoScout24 account and write your message template.",
+        step3_h3: "Start the automation",
+        step3_p: 'Click "Start automation" or enable the schedule — WohnungFinder automatically sends requests to matching listings.',
+        req_label: "Requirements",
+        req_h2: "What you need",
+        req_sub: "WohnungFinder runs entirely locally on your Mac.",
+        req_h3: "System requirements",
+        req1: "macOS 12 Monterey or newer",
+        req2: "Google Chrome installed",
+        req3: "ImmoScout24 account (free)",
+        req4: "Internet connection",
+        donate_h2: "Like WohnungFinder?",
+        donate_p: "The app is free and will stay that way. If it helped you find a home, I'd appreciate a small tip — so I can keep working on it.",
+        donate_btn: "☕ Buy me a coffee",
+        donate_meta: "Via Gumroad · Every bit helps · Completely optional",
+        cta_h2: "Start your apartment search today",
+        cta_p: "Download free. No account, no credit card.",
+        cta_btn: "Download free",
+        cta_meta: "For Mac · Open source · No data collection",
+        footer_text: "WohnungFinder · " + GH + " · Compatible with ImmoScout24, but not an official product and not affiliated with ImmobilienScout GmbH. ImmoScout24® is a registered trademark of its respective owners."
+      },
+      es: {
+        _title: "WohnungFinder – Contacta anuncios de alquiler automáticamente (compatible con ImmoScout24)",
+        _desc: "WohnungFinder automatiza tu búsqueda de piso. Filtra, encuentra y contacta caseros automáticamente – compatible con ImmoScout24, gratis para Mac.",
+        nav_cta: "Descargar gratis",
+        hero_badge: "Gratis · Solo Mac",
+        hero_h1: 'Búsqueda de piso en <span>piloto automático</span>',
+        hero_p: "WohnungFinder envía solicitudes de contacto automáticamente — con tus filtros, tu mensaje, las 24 horas. Compatible con ImmoScout24.",
+        hero_btn_primary: "Descargar para Mac",
+        hero_meta: "macOS 12+ · Gratis · Requiere Google Chrome",
+        feat_label: "Funciones",
+        feat_h2: "Todo lo que necesitas",
+        feat_sub: "Configúralo una vez y deja que WohnungFinder haga el resto.",
+        feat1_h3: "Filtros inteligentes",
+        feat1_p: "Ciudad, radio, renta máxima, tamaño mínimo, número de habitaciones — todos los filtros clave, en una app.",
+        feat2_h3: "Mensajes automáticos",
+        feat2_p: "Escribe tu mensaje una vez. WohnungFinder lo personaliza automáticamente con el nombre del casero y el título del anuncio.",
+        feat3_h3: "Programación",
+        feat3_p: "Ejecuta la automatización cada 2 minutos, cada hora o cada día — para no perderte nunca un piso nuevo.",
+        feat4_h3: "Sin duplicados",
+        feat4_p: "WohnungFinder recuerda a qué caseros ya has contactado y los omite automáticamente.",
+        feat5_h3: "Filtros premium",
+        feat5_p: "Los pisos de intercambio y los proyectos de obra nueva se pueden excluir automáticamente.",
+        feat6_h3: "Historial de contactos",
+        feat6_p: "Mira todos los anuncios contactados de un vistazo — con enlace al anuncio y la fecha de la solicitud.",
+        how_label: "Cómo funciona",
+        how_h2: "Tu piso ideal en 3 pasos",
+        how_sub: "Configúralo una vez y todo funciona solo.",
+        step1_h3: "Descargar e instalar la app",
+        step1_p: "Descarga WohnungFinder y arrastra la app a tu carpeta de Aplicaciones. En el primer inicio: <strong>clic derecho → Abrir → Abrir</strong> (confirma el aviso de seguridad de macOS una vez).",
+        step2_h3: "Configurar filtros y mensaje",
+        step2_p: "Configura tus filtros de búsqueda, inicia sesión con tu cuenta de ImmoScout24 y escribe tu plantilla de mensaje.",
+        step3_h3: "Iniciar la automatización",
+        step3_p: 'Haz clic en "Iniciar automatización" o activa la programación — WohnungFinder envía solicitudes automáticamente a los anuncios que coincidan.',
+        req_label: "Requisitos",
+        req_h2: "Lo que necesitas",
+        req_sub: "WohnungFinder funciona totalmente en local en tu Mac.",
+        req_h3: "Requisitos del sistema",
+        req1: "macOS 12 Monterey o posterior",
+        req2: "Google Chrome instalado",
+        req3: "Cuenta de ImmoScout24 (gratis)",
+        req4: "Conexión a internet",
+        donate_h2: "¿Te gusta WohnungFinder?",
+        donate_p: "La app es gratis y lo seguirá siendo. Si te ayudó a encontrar piso, agradezco una pequeña propina — para poder seguir trabajando en ella.",
+        donate_btn: "☕ Invítame a un café",
+        donate_meta: "Vía Gumroad · Todo ayuda · Totalmente voluntario",
+        cta_h2: "Empieza tu búsqueda de piso hoy",
+        cta_p: "Descarga gratis. Sin cuenta, sin tarjeta de crédito.",
+        cta_btn: "Descargar gratis",
+        cta_meta: "Para Mac · Open source · Sin recopilación de datos",
+        footer_text: "WohnungFinder · " + GH + " · Compatible con ImmoScout24, pero no es un producto oficial ni está afiliado a ImmobilienScout GmbH. ImmoScout24® es una marca registrada de sus respectivos propietarios."
+      }
+    };
+
+    function applyLang(lang) {
+      var dict = I18N[lang] || I18N.de;
+      document.documentElement.lang = lang;
+      if (dict._title) document.title = dict._title;
+      var md = document.querySelector('meta[name="description"]');
+      var og = document.querySelector('meta[property="og:description"]');
+      if (md && dict._desc) md.setAttribute("content", dict._desc);
+      if (og && dict._desc) og.setAttribute("content", dict._desc);
+
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n");
+        if (dict[key] != null) el.textContent = dict[key];
+      });
+      document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n-html");
+        if (dict[key] != null) el.innerHTML = dict[key];
+      });
+
+      document.querySelectorAll("#langSwitch button").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-lang") === lang);
+      });
+      try { localStorage.setItem("wf_lang", lang); } catch (e) {}
+    }
+
+    (function () {
+      var saved;
+      try { saved = localStorage.getItem("wf_lang"); } catch (e) {}
+      var browser = (navigator.language || "de").slice(0, 2).toLowerCase();
+      var initial = saved || (["de", "en", "es"].indexOf(browser) !== -1 ? browser : "de");
+      applyLang(initial);
+      document.querySelectorAll("#langSwitch button").forEach(function (b) {
+        b.addEventListener("click", function () { applyLang(b.getAttribute("data-lang")); });
+      });
+    })();
+  </script>
 
 </body>
 </html>
