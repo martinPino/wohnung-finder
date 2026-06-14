@@ -31,13 +31,11 @@ export type FilterToggles = {
 };
 
 // ---------------------------------------------------------------------------
-// Credentials — ImmoScout24 login details
+// Account options — login itself happens through the saved browser session,
+// so we only keep account-related automation options here.
 // ---------------------------------------------------------------------------
 
 export interface Credentials {
-  email: string;
-  /** Stored in localStorage — user is responsible for security */
-  password: string;
   /** If true, skip premium wall detection and contact all listings */
   isPremiumAccount: boolean;
 }

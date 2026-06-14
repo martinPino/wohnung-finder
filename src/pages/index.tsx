@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Head from "next/head";
 import FilterForm from "@/components/FilterForm";
-import CredentialsForm from "@/components/CredentialsForm";
 import MessageForm from "@/components/MessageForm";
 import StatusPanel from "@/components/StatusPanel";
 import ContactedList from "@/components/ContactedList";
@@ -17,7 +16,7 @@ import {
 import type { AutomationState, RunAutomationRequest } from "@/types";
 
 const INITIAL_STATE: AutomationState = { status: "idle", listingsFound: 0, requestsSent: 0, logs: [] };
-type Tab = "filters" | "account" | "message" | "contacted" | "schedule";
+type Tab = "filters" | "message" | "contacted" | "schedule";
 
 const LANG_FLAGS: Record<Lang, string> = { de: "🇩🇪", en: "🇬🇧", es: "🇪🇸" };
 const LANG_LABELS: Record<Lang, string> = { de: "DE", en: "EN", es: "ES" };
@@ -64,7 +63,6 @@ export default function Home() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "filters",   label: t.tabFilters   },
-    { id: "account",   label: t.tabAccount   },
     { id: "message",   label: t.tabMessage   },
     { id: "contacted", label: t.tabContacted },
     { id: "schedule",  label: t.tabSchedule  },
@@ -148,8 +146,7 @@ export default function Home() {
 
                 {/* Panels */}
                 <div className="p-5">
-                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} t={t} />}
-                  {activeTab === "account"   && <CredentialsForm credentials={credentials} onChange={setCredentials} t={t} />}
+                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} isPremiumAccount={credentials.isPremiumAccount} onPremiumChange={(v) => setCredentials({ ...credentials, isPremiumAccount: v })} t={t} />}
                   {activeTab === "message"   && <MessageForm message={contactMessage} onChange={setContactMessage} t={t} />}
                   {activeTab === "contacted" && <ContactedList t={t} />}
                   {activeTab === "schedule"  && <ScheduleForm t={t} appConfig={{ filters, filterToggles, credentials, contactMessage }} />}

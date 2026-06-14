@@ -40,8 +40,6 @@ export const DEFAULT_FILTER_TOGGLES: FilterToggles = {
 };
 
 export const DEFAULT_CREDENTIALS: Credentials = {
-  email: "",
-  password: "",
   isPremiumAccount: false,
 };
 

@@ -6,6 +6,8 @@ interface FilterFormProps {
   toggles: FilterToggles;
   onFiltersChange: (filters: SearchFilters) => void;
   onTogglesChange: (toggles: FilterToggles) => void;
+  isPremiumAccount: boolean;
+  onPremiumChange: (value: boolean) => void;
   t: T;
 }
 
@@ -62,7 +64,7 @@ function SearchSummary({ filters, toggles, t }: { filters: SearchFilters; toggle
   );
 }
 
-export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, t }: FilterFormProps) {
+export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, isPremiumAccount, onPremiumChange, t }: FilterFormProps) {
   const setFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) =>
     onFiltersChange({ ...filters, [key]: value });
 
@@ -206,6 +208,20 @@ export default function FilterForm({ filters, toggles, onFiltersChange, onToggle
           />
         </div>
       </div>
+
+      {/* Premium account */}
+      <label className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={isPremiumAccount}
+          onChange={(e) => onPremiumChange(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <span>
+          <span className="block text-sm font-medium text-gray-700">{t.premiumLabel}</span>
+          <span className="mt-0.5 block text-xs text-gray-400">{t.premiumHint}</span>
+        </span>
+      </label>
     </div>
   );
 }
