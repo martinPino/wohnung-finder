@@ -14,7 +14,7 @@
  *     npm run automation -- --dry-run (search only, no messages sent)
  */
 
-import { chromium, type BrowserContext, type Page } from "playwright";
+import { type Browser, type BrowserContext, type Page } from "playwright";
 import { spawn } from "child_process";
 import { isCancelled, resetCancellation, setActivePage } from "../lib/cancellation";
 import * as fs from "fs";
@@ -142,6 +142,9 @@ export async function launchChromeWithDebugging(): Promise<void> {
     `--remote-debugging-port=${CDP_PORT}`,
     `--user-data-dir=${profileDir}`,
     "--remote-allow-origins=*",   // required for full CDP support (setDownloadBehavior etc.)
+    "--disable-blink-features=AutomationControlled",
+    "--start-maximized",
+    "--lang=de-DE",
     "--no-first-run",
     "--no-default-browser-check",
   ], { detached: true, stdio: "ignore" }).unref();
@@ -196,53 +199,45 @@ export async function runAutomation(
   const contactedRecords = loadContactedRecords();
   const contacted = new Set(contactedRecords.map(r => r.id));
   let context: BrowserContext | null = null;
+  let browser: Browser | null = null;
 
   try {
     resetCancellation(); // clear any previous stop request
     log("info", `Starting${dryRun ? " (DRY RUN)" : ""}…`);
 
-    const chromeLaunched = await isCDPAvailable();
+    let chromeReady = await isCDPAvailable();
 
-    if (chromeLaunched) {
-      // Chrome already running with debugging port — connect via CDP
-      log("info", "Connecting to running Chrome…");
-      const { default: http } = await import("http");
-      const wsUrl: string = await new Promise((resolve, reject) => {
-        http.get(`${CDP_URL}/json/version`, (res) => {
-          let data = "";
-          res.on("data", d => data += d);
-          res.on("end", () => resolve(JSON.parse(data).webSocketDebuggerUrl));
-        }).on("error", reject);
-      });
-      const { chromium: cr } = await import("playwright");
-      const browser = await cr.connectOverCDP(wsUrl);
-      context = browser.contexts()[0] ?? await browser.newContext();
-      log("info", "Connected ✓");
-    } else {
-      // Chrome not running — open with saved profile
-      if (!fs.existsSync(BROWSER_PROFILE_DIR)) {
-        throw new Error(
-          "No browser session found. Run 'npm run chrome' first to log in."
-        );
+    if (!chromeReady) {
+      // No debugging Chrome yet — launch one. It uses the saved profile and
+      // stays open across runs, so the ImmoScout login is reused next time.
+      log("info", "Starting Chrome (it stays open and reuses your login)…");
+      await launchChromeWithDebugging();
+      chromeReady = await isCDPAvailable();
+      if (!chromeReady) {
+        throw new Error("Could not start Chrome with the debugging port.");
       }
-      log("info", "Opening browser with saved session…");
-      context = await chromium.launchPersistentContext(BROWSER_PROFILE_DIR, {
-        channel: "chrome",
-        headless: false,
-        slowMo: 120,
-        viewport: null,
-        locale: "de-DE",
-        args: [
-          "--start-maximized",
-          "--remote-allow-origins=*",
-          "--disable-blink-features=AutomationControlled",
-          "--no-first-run",
-        ],
-      });
-      await context.addInitScript(() => {
-        Object.defineProperty(navigator, "webdriver", { get: () => undefined });
-      });
+    } else {
+      log("info", "Reusing the Chrome window already open…");
     }
+
+    // Connect via CDP. We attach to Chrome but never terminate it on exit —
+    // only the tab we open is closed, so the window and session persist.
+    log("info", "Connecting to Chrome…");
+    const { default: http } = await import("http");
+    const wsUrl: string = await new Promise((resolve, reject) => {
+      http.get(`${CDP_URL}/json/version`, (res) => {
+        let data = "";
+        res.on("data", d => data += d);
+        res.on("end", () => resolve(JSON.parse(data).webSocketDebuggerUrl));
+      }).on("error", reject);
+    });
+    const { chromium: cr } = await import("playwright");
+    browser = await cr.connectOverCDP(wsUrl, { slowMo: 120 });
+    context = browser.contexts()[0] ?? await browser.newContext();
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, "webdriver", { get: () => undefined });
+    });
+    log("info", "Connected ✓");
 
     const page = await context.newPage();
     setActivePage(page); // register so stop button can close it immediately
@@ -308,7 +303,9 @@ export async function runAutomation(
     }
   } finally {
     setActivePage(null);
-    if (context) await context.close().catch(() => {});
+    // Disconnect from Chrome WITHOUT closing it, so the window and the
+    // logged-in ImmoScout session stay available for the next run.
+    if (browser) await browser.close().catch(() => {});
   }
 
   return { listingsFound, requestsSent, logs };
