@@ -104,6 +104,24 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
 
   const hovered = hover != null ? series[hover] : null;
 
+  // X-axis labels: first day, last day, and every day with activity —
+  // dropping any that would overlap a previously kept label.
+  const minGap = 34;
+  const endX = x(n - 1);
+  const labelIdx: number[] = [];
+  {
+    const candidates = Array.from(
+      new Set([0, n - 1, ...series.flatMap((s, i) => (s.value > 0 ? [i] : []))])
+    ).sort((a, b) => a - b);
+    let lastX = -Infinity;
+    for (const i of candidates) {
+      if (i === 0) { labelIdx.push(i); lastX = x(i); continue; }
+      if (i === n - 1) { labelIdx.push(i); continue; } // always keep last
+      const xi = x(i);
+      if (xi - lastX >= minGap && endX - xi >= minGap) { labelIdx.push(i); lastX = xi; }
+    }
+  }
+
   return (
     <div
       ref={wrapRef}
@@ -144,9 +162,19 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
             <circle cx={x(hover!)} cy={y(hovered.value)} r="3.5" fill="#2563eb" stroke="#fff" strokeWidth="1.5" />
           </>
         )}
-        {/* x labels: first & last */}
-        <text x={padX} y={H - 6} fontSize="9" fill="#9ca3af">{fmt(series[0].date)}</text>
-        <text x={padX + innerW} y={H - 6} fontSize="9" fill="#9ca3af" textAnchor="end">{fmt(series[n - 1].date)}</text>
+        {/* x labels: first, last, and days with activity */}
+        {labelIdx.map((i) => (
+          <text
+            key={i}
+            x={x(i)}
+            y={H - 6}
+            fontSize="9"
+            fill="#9ca3af"
+            textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
+          >
+            {fmt(series[i].date)}
+          </text>
+        ))}
       </svg>
 
       {/* Tooltip */}
