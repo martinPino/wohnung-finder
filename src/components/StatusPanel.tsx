@@ -226,28 +226,6 @@ export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelP
         </span>
       </div>
 
-      {/* Contacted-per-day chart */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t.chartTitle}</p>
-          <div className="flex gap-0.5 rounded-lg bg-gray-100 p-0.5">
-            {RANGES.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => setRange(r.id)}
-                className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${
-                  range === r.id ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <DayChart series={series} t={t} />
-      </div>
-
       <div ref={logRef} className="h-48 overflow-y-auto rounded-md bg-gray-900 p-3 font-mono text-xs leading-relaxed">
         {state.logs.length === 0 ? (
           <span className="text-gray-500">{t.waitingToStart}</span>
@@ -312,6 +290,28 @@ export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelP
           </button>
         </div>
       )}
+
+      {/* Contacted-per-day chart */}
+      <div className="space-y-2 pt-1">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{t.chartTitle}</p>
+          <div className="flex gap-0.5 rounded-lg bg-gray-100 p-0.5">
+            {RANGES.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => setRange(r.id)}
+                className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${
+                  range === r.id ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <DayChart series={series} t={t} />
+      </div>
     </div>
   );
 }
