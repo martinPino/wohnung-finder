@@ -74,11 +74,10 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
   const maxV = Math.max(1, ...series.map((s) => s.value));
   const n = series.length;
 
-  const x = (i: number) => (n <= 1 ? padX + innerW / 2 : padX + (i / (n - 1)) * innerW);
+  const step = innerW / n;
+  const barW = Math.max(1.5, step - Math.min(4, step * 0.3));
+  const x = (i: number) => padX + (i + 0.5) * step; // bar center
   const y = (v: number) => padTop + innerH - (v / maxV) * innerH;
-
-  const linePts = series.map((s, i) => `${x(i).toFixed(1)},${y(s.value).toFixed(1)}`).join(" ");
-  const areaPts = `${padX.toFixed(1)},${(padTop + innerH).toFixed(1)} ${linePts} ${(padX + innerW).toFixed(1)},${(padTop + innerH).toFixed(1)}`;
 
   const fmt = (d: Date) => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
   const fmtFull = (d: Date) => d.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit" });
@@ -97,7 +96,7 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
     const rect = el.getBoundingClientRect();
     const fx = (e.clientX - rect.left) / rect.width; // 0..1 across the element
     const vbX = fx * W;
-    let i = n <= 1 ? 0 : Math.round(((vbX - padX) / innerW) * (n - 1));
+    let i = Math.floor((vbX - padX) / step);
     i = Math.max(0, Math.min(n - 1, i));
     setHover(i);
   };
@@ -130,38 +129,24 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
       onMouseLeave={() => setHover(null)}
     >
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: 120 }}>
-        <defs>
-          <linearGradient id="wfChartFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-          </linearGradient>
-        </defs>
         {/* max gridline */}
         <line x1={padX} y1={y(maxV)} x2={padX + innerW} y2={y(maxV)} stroke="#e5e7eb" strokeWidth="1" />
         <text x={padX} y={y(maxV) - 3} fontSize="9" fill="#9ca3af">{maxV}</text>
-        {/* area + line */}
-        <polygon points={areaPts} fill="url(#wfChartFill)" />
-        <polyline
-          points={linePts}
-          fill="none"
-          stroke="#2563eb"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        {/* endpoint dots */}
-        {series.map((s, i) =>
-          s.value > 0 ? (
-            <circle key={i} cx={x(i)} cy={y(s.value)} r="2" fill="#2563eb" />
-          ) : null
-        )}
-        {/* hover guide + highlighted point */}
-        {hovered && (
-          <>
-            <line x1={x(hover!)} y1={padTop} x2={x(hover!)} y2={padTop + innerH} stroke="#93c5fd" strokeWidth="1" strokeDasharray="3 3" />
-            <circle cx={x(hover!)} cy={y(hovered.value)} r="3.5" fill="#2563eb" stroke="#fff" strokeWidth="1.5" />
-          </>
-        )}
+        {/* bars */}
+        {series.map((s, i) => {
+          const h = (s.value / maxV) * innerH;
+          return (
+            <rect
+              key={i}
+              x={x(i) - barW / 2}
+              y={padTop + innerH - h}
+              width={barW}
+              height={h}
+              rx={Math.min(1.5, barW / 2)}
+              fill={hover === i ? "#1d4ed8" : "#2563eb"}
+            />
+          );
+        })}
         {/* x labels: first, last, and days with activity */}
         {labelIdx.map((i) => (
           <text
