@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AutomationState, ContactedListing } from "@/types";
 import type { T } from "@/lib/i18n";
 
@@ -59,25 +59,12 @@ function buildSeries(items: ContactedListing[], range: Range): DayPoint[] {
 }
 
 function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
-  const W = 320;
-  const H = 120;
-  const padX = 8;
-  const padTop = 12;
-  const padBottom = 22;
-  const innerW = W - padX * 2;
-  const innerH = H - padTop - padBottom;
-
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const PLOT_H = 104; // px height of the plotting area
   const [hover, setHover] = useState<number | null>(null);
 
   const total = series.reduce((a, s) => a + s.value, 0);
   const maxV = Math.max(1, ...series.map((s) => s.value));
   const n = series.length;
-
-  const step = innerW / n;
-  const barW = Math.max(1.5, step - Math.min(4, step * 0.3));
-  const x = (i: number) => padX + (i + 0.5) * step; // bar center
-  const y = (v: number) => padTop + innerH - (v / maxV) * innerH;
 
   const fmt = (d: Date) => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
   const fmtFull = (d: Date) => d.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit" });
@@ -90,88 +77,105 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
     );
   }
 
-  const onMove = (e: MouseEvent<HTMLDivElement>) => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const fx = (e.clientX - rect.left) / rect.width; // 0..1 across the element
-    const vbX = fx * W;
-    let i = Math.floor((vbX - padX) / step);
-    i = Math.max(0, Math.min(n - 1, i));
-    setHover(i);
-  };
-
   const hovered = hover != null ? series[hover] : null;
 
-  // X-axis labels: first day, last day, and every day with activity —
-  // dropping any that would overlap a previously kept label.
-  const minGap = 34;
-  const endX = x(n - 1);
+  // Bar-center position as a 0..1 fraction of the plot width.
+  const pos = (i: number) => (i + 0.5) / n;
+
+  // X-axis labels: first, last, and every day with activity — dropping any
+  // that would overlap a previously kept label (min gap as a width fraction).
+  const minGapFrac = 0.13;
   const labelIdx: number[] = [];
   {
     const candidates = Array.from(
       new Set([0, n - 1, ...series.flatMap((s, i) => (s.value > 0 ? [i] : []))])
     ).sort((a, b) => a - b);
-    let lastX = -Infinity;
+    let lastP = -Infinity;
     for (const i of candidates) {
-      if (i === 0) { labelIdx.push(i); lastX = x(i); continue; }
+      if (i === 0) { labelIdx.push(i); lastP = pos(i); continue; }
       if (i === n - 1) { labelIdx.push(i); continue; } // always keep last
-      const xi = x(i);
-      if (xi - lastX >= minGap && endX - xi >= minGap) { labelIdx.push(i); lastX = xi; }
+      const p = pos(i);
+      if (p - lastP >= minGapFrac && pos(n - 1) - p >= minGapFrac) { labelIdx.push(i); lastP = p; }
     }
   }
 
+  const midV = Math.round(maxV / 2);
+
   return (
-    <div
-      ref={wrapRef}
-      className="relative rounded-lg border bg-gray-50 p-2"
-      onMouseMove={onMove}
-      onMouseLeave={() => setHover(null)}
-    >
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: 120 }}>
-        {/* max gridline */}
-        <line x1={padX} y1={y(maxV)} x2={padX + innerW} y2={y(maxV)} stroke="#e5e7eb" strokeWidth="1" />
-        <text x={padX} y={y(maxV) - 3} fontSize="9" fill="#9ca3af">{maxV}</text>
-        {/* bars */}
-        {series.map((s, i) => {
-          const h = (s.value / maxV) * innerH;
-          return (
-            <rect
-              key={i}
-              x={x(i) - barW / 2}
-              y={padTop + innerH - h}
-              width={barW}
-              height={h}
-              rx={Math.min(1.5, barW / 2)}
-              fill={hover === i ? "#1d4ed8" : "#2563eb"}
-            />
-          );
-        })}
-        {/* x labels: first, last, and days with activity */}
+    <div className="rounded-lg border bg-gray-50 px-3 pb-2 pt-4">
+      <div className="flex">
+        {/* Y-axis gutter (keeps labels off the bars) */}
+        <div className="relative mr-1.5 w-5 flex-shrink-0" style={{ height: PLOT_H }}>
+          <span className="absolute right-0 top-0 -translate-y-1/2 text-[10px] tabular-nums text-gray-400">{maxV}</span>
+          {midV > 0 && midV < maxV && (
+            <span className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] tabular-nums text-gray-300">{midV}</span>
+          )}
+          <span className="absolute bottom-0 right-0 translate-y-1/2 text-[10px] tabular-nums text-gray-400">0</span>
+        </div>
+
+        {/* Plot area */}
+        <div className="relative flex-1" style={{ height: PLOT_H }} onMouseLeave={() => setHover(null)}>
+          {/* gridlines */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-gray-200" />
+          <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-gray-100" />
+
+          {/* Bars (x-axis = bottom border) */}
+          <div className="absolute inset-0 flex items-end gap-[3px] border-b border-gray-300">
+            {series.map((s, i) => (
+              <div
+                key={i}
+                className="flex h-full flex-1 cursor-default items-end"
+                onMouseEnter={() => setHover(i)}
+              >
+                <div
+                  className="w-full rounded-t-[2px] transition-colors"
+                  style={{
+                    height: `${(s.value / maxV) * 100}%`,
+                    minHeight: s.value > 0 ? 3 : 0,
+                    backgroundColor: hover === i ? "#1d4ed8" : "#3b82f6",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Tooltip */}
+          {hovered && (
+            <div
+              className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-center text-[11px] leading-tight text-white shadow-lg"
+              style={{
+                left: `${pos(hover!) * 100}%`,
+                top: `${(1 - hovered.value / maxV) * 100}%`,
+                transform: "translate(-50%, -118%)",
+              }}
+            >
+              <span className="block font-semibold">
+                {hovered.value} {hovered.value === 1 ? t.chartTooltipOne : t.chartTooltipMany}
+              </span>
+              <span className="block text-gray-300">{fmtFull(hovered.date)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* X-axis labels (aligned under the plot, past the gutter) */}
+      <div className="relative ml-[26px] mt-1.5 h-3">
         {labelIdx.map((i) => (
-          <text
+          <span
             key={i}
-            x={x(i)}
-            y={H - 6}
-            fontSize="9"
-            fill="#9ca3af"
-            textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
+            className="absolute top-0 text-[10px] tabular-nums text-gray-400"
+            style={
+              i === 0
+                ? { left: 0 }
+                : i === n - 1
+                ? { right: 0 }
+                : { left: `${pos(i) * 100}%`, transform: "translateX(-50%)" }
+            }
           >
             {fmt(series[i].date)}
-          </text>
+          </span>
         ))}
-      </svg>
-
-      {/* Tooltip */}
-      {hovered && (
-        <div
-          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-center text-[11px] leading-tight text-white shadow-lg"
-          style={{ left: `${(x(hover!) / W) * 100}%`, top: `${y(hovered.value)}px`, marginTop: -8 }}
-        >
-          <span className="block font-semibold">{hovered.value} {hovered.value === 1 ? t.chartTooltipOne : t.chartTooltipMany}</span>
-          <span className="block text-gray-300">{fmtFull(hovered.date)}</span>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
