@@ -82,7 +82,6 @@ export default function Onboarding({ t, onComplete }: OnboardingProps) {
 
   const current = steps[step];
   const isLast = step === steps.length - 1;
-  const progress = ((step + 1) / steps.length) * 100;
 
   const handleAction = () => {
     if (current.actionFn) current.actionFn();
@@ -98,14 +97,6 @@ export default function Onboarding({ t, onComplete }: OnboardingProps) {
         className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden"
         style={{ maxHeight: "90vh" }}
       >
-        {/* Progress bar */}
-        <div className="h-1 bg-gray-100">
-          <div
-            className="h-1 bg-blue-600 transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
         <div className="p-8">
           {/* Step indicator */}
           <div className="flex items-center gap-2 mb-6">
