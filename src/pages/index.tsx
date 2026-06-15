@@ -180,7 +180,7 @@ export default function Home() {
 
             {/* Right — status */}
             <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <StatusPanel state={automationState} onStop={handleStop} t={t} />
+              <StatusPanel state={automationState} onStop={handleStop} onSeeAll={() => setActiveTab("contacted")} t={t} />
             </div>
           </div>
         </div>

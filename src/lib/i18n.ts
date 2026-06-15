@@ -87,6 +87,8 @@ export const translations = {
     requestsSent: "Anfragen gesendet",
     waitingToStart: "Warte auf Start…",
     stopAutomation: "Automation stoppen",
+    recentlyContacted: "Zuletzt kontaktiert",
+    seeAll: "Alle ansehen",
 
     // ContactedList
     contactedTitle: "Kontaktierte Anzeigen",
@@ -186,6 +188,8 @@ export const translations = {
     requestsSent: "Requests sent",
     waitingToStart: "Waiting to start…",
     stopAutomation: "Stop automation",
+    recentlyContacted: "Recently contacted",
+    seeAll: "See all",
 
     contactedTitle: "Contacted listings",
     noContacted: "No requests sent yet.",
@@ -283,6 +287,8 @@ export const translations = {
     requestsSent: "Solicitudes enviadas",
     waitingToStart: "Esperando inicio…",
     stopAutomation: "Detener automatización",
+    recentlyContacted: "Contactados recientemente",
+    seeAll: "Ver todos",
 
     contactedTitle: "Anuncios contactados",
     noContacted: "Aún no se han enviado solicitudes.",
