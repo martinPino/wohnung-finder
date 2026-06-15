@@ -38,30 +38,33 @@ export function useOnboarding() {
 export default function Onboarding({ t, onComplete }: OnboardingProps) {
   const [step, setStep] = useState(0);
 
+  // Open (or focus) the SAME debugging Chrome the automation connects to
+  // (saved profile + remote-debugging port), with the ImmoScout login page.
+  // Never opens a normal browser window.
+  const openDebugChrome = async () => {
+    try {
+      await fetch("/api/run-automation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ launchChrome: true }),
+      });
+    } catch { /* ignore */ }
+  };
+
   const steps: Step[] = [
     {
       icon: "🔵",
       titleKey: "onboardingStep1Title",
       descKey: "onboardingStep1Desc",
       actionKey: "onboardingStep1Action",
-      actionFn: async () => {
-        try {
-          await fetch("/api/run-automation", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ launchChrome: true }),
-          });
-        } catch { /* ignore */ }
-        // Try to launch chrome via the npm script hint
-        window.open("https://immobilienscout24.de", "_blank");
-      },
+      actionFn: openDebugChrome,
     },
     {
       icon: "🔐",
       titleKey: "onboardingStep2Title",
       descKey: "onboardingStep2Desc",
       actionKey: "onboardingStep2Action",
-      actionUrl: "https://www.immobilienscout24.de",
+      actionFn: openDebugChrome,
     },
     {
       icon: "🔍",

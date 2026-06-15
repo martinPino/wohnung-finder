@@ -159,9 +159,46 @@ export async function launchChromeWithDebugging(): Promise<void> {
     process.stdout.write(".");
   }
 
-  console.error("\n✗ Chrome did not start. Try launching it manually with:");
-  console.error(`  "${chromePath}" --remote-debugging-port=${CDP_PORT} --user-data-dir="${profileDir}"`);
-  process.exit(1);
+  throw new Error(
+    `Chrome did not start on the debugging port (${CDP_PORT}). ` +
+    `Try launching it manually: "${chromePath}" --remote-debugging-port=${CDP_PORT} --user-data-dir="${profileDir}"`
+  );
+}
+
+/**
+ * Opens (or focuses) the debugging Chrome the automation uses, with the
+ * ImmoScout login page in a foreground tab. If that Chrome is already
+ * running, this just brings it up — it does NOT open a normal browser window.
+ */
+export async function openLoginWindow(): Promise<void> {
+  if (!(await isCDPAvailable())) {
+    await launchChromeWithDebugging();
+  }
+
+  const { default: http } = await import("http");
+  const wsUrl: string = await new Promise((resolve, reject) => {
+    http.get(`${CDP_URL}/json/version`, (res) => {
+      let data = "";
+      res.on("data", (d) => (data += d));
+      res.on("end", () => resolve(JSON.parse(data).webSocketDebuggerUrl));
+    }).on("error", reject);
+  });
+
+  const { chromium } = await import("playwright");
+  const browser = await chromium.connectOverCDP(wsUrl);
+  try {
+    const ctx = browser.contexts()[0] ?? (await browser.newContext());
+    const page = await ctx.newPage();
+    await page
+      .goto("https://www.immobilienscout24.de/geschlossenerbereich/start.html", {
+        waitUntil: "domcontentloaded",
+      })
+      .catch(() => {});
+    await page.bringToFront().catch(() => {});
+  } finally {
+    // Disconnect only — Chrome stays open for the automation.
+    await browser.close().catch(() => {});
+  }
 }
 
 async function isCDPAvailable(): Promise<boolean> {

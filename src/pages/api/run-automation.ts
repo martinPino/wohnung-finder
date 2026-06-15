@@ -13,12 +13,12 @@ export default async function handler(
     launchChrome?: boolean;
   };
 
-  // Onboarding "open Chrome to log in" step: just launch the debugging Chrome
-  // (with the saved profile) and return — no search/contact is performed.
+  // Onboarding "open Chrome to log in" step: launch/focus the debugging Chrome
+  // (with the saved profile) and bring up the login page — no search is performed.
   if (launchChrome) {
     try {
-      const { launchChromeWithDebugging } = await import("../../automation/immoscout");
-      await launchChromeWithDebugging();
+      const { openLoginWindow } = await import("../../automation/immoscout");
+      await openLoginWindow();
       return res.status(200).json({
         ok: true,
         message: "Chrome opened. Log in to ImmoScout24, then start the automation.",
