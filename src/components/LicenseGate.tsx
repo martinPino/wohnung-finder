@@ -84,7 +84,7 @@ export default function LicenseGate({ children }: LicenseGateProps) {
     {
       id: "monthly",
       name: t.pwMonthlyName,
-      price: "9 €",
+      price: "9,99 €",
       cadence: t.pwPerMonth,
       highlight: false,
       features: [t.pwMonthlyF1, t.pwMonthlyF2, t.pwMonthlyF3],
@@ -92,7 +92,7 @@ export default function LicenseGate({ children }: LicenseGateProps) {
     {
       id: "lifetime",
       name: t.pwLifetimeName,
-      price: "29 €",
+      price: "29,99 €",
       cadence: t.pwOnce,
       highlight: true,
       badge: t.pwPopular,
