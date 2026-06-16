@@ -1,6 +1,6 @@
 {
   "name": "immoscout-automation",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
@@ -48,7 +48,7 @@
   },
   "build": {
     "appId": "com.martinpino.immoscout-automation",
-    "productName": "ImmoScout Automation",
+    "productName": "WohnungFinder",
     "copyright": "Copyright © 2024 martinPino",
     "asar": true,
     "files": [
@@ -72,6 +72,10 @@
         "to": "app/.next/standalone",
         "filter": [
           "**/*",
+          "!node_modules/electron/**/*",
+          "!node_modules/electron-builder/**/*",
+          "!node_modules/app-builder-lib/**/*",
+          "!node_modules/fsevents/**/*",
           "!contacted.json",
           "!schedule.json",
           "!automation-config.json",
@@ -100,17 +104,17 @@
         {
           "target": "dmg",
           "arch": [
-            "arm64",
-            "x64"
+            "universal"
           ]
         }
       ],
+      "artifactName": "WohnungFinder-Mac.${ext}",
       "category": "public.app-category.utilities",
       "darkModeSupport": true,
       "icon": "public/icon.png"
     },
     "dmg": {
-      "title": "ImmoScout Automation ${version}",
+      "title": "WohnungFinder ${version}",
       "contents": [
         {
           "x": 130,
@@ -127,6 +131,7 @@
     "win": {
       "target": "nsis",
       "publisherName": "martinPino",
+      "artifactName": "WohnungFinder-Windows-Setup.${ext}",
       "icon": "public/icon.png"
     },
     "nsis": {
