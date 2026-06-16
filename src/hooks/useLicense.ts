@@ -116,6 +116,19 @@ export function useLicense(): UseLicense {
     };
   }, []);
 
+  // Re-check when the window regains focus (e.g. returning from the external
+  // browser checkout) so the paywall unlocks automatically after a purchase.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onFocus = () => {
+      const b = getBridge();
+      if (!b) return;
+      b.refresh().then((s) => setState(s)).catch(() => {});
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
   const buy = useCallback(async (plan: BuyablePlan) => {
     const bridge = getBridge();
     if (!bridge) {

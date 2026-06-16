@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLicense } from "@/hooks/useLicense";
 import type { BuyablePlan } from "@/types/license";
 
@@ -73,6 +73,32 @@ export default function LicenseGate({ children }: LicenseGateProps) {
   const [busyPlan, setBusyPlan] = useState<BuyablePlan | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  // Stop polling once the license is active, and clean up on unmount.
+  useEffect(() => {
+    if (isActive) stopPolling();
+    return stopPolling;
+  }, [isActive]);
+
+  // After a purchase, poll the license until the webhook marks it active.
+  const startPollingForActivation = () => {
+    if (pollRef.current) return;
+    let tries = 0;
+    const MAX = 45; // ~3 min at 4s
+    pollRef.current = setInterval(async () => {
+      tries += 1;
+      const s = await refresh();
+      if (s.status === "active" || tries >= MAX) stopPolling();
+    }, 4000);
+  };
 
   // The paywall is a non-blocking OVERLAY: children ALWAYS render, so the web
   // build / `next dev` (no bridge) never flashes a license screen, and the gate
@@ -85,8 +111,11 @@ export default function LicenseGate({ children }: LicenseGateProps) {
     setBusyPlan(plan);
     try {
       await buy(plan);
+      // The purchase completes in the external browser; the webhook then writes
+      // the license. Poll until it turns active so the gate unlocks on its own.
+      startPollingForActivation();
     } finally {
-      // Re-enable the button; completion arrives later via onChange.
+      // Re-enable the button; activation arrives via polling / focus refresh.
       setBusyPlan(null);
     }
   };
