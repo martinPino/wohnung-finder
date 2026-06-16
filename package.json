@@ -137,7 +137,7 @@
     "publish": {
       "provider": "github",
       "owner": "martinPino",
-      "repo": "immoscout-automation",
+      "repo": "wohnung-finder",
       "releaseType": "release"
     }
   }
