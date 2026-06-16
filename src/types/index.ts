@@ -113,6 +113,12 @@ export interface ScheduleStatus {
   nextRunAt: string | null;   // ISO timestamp
   lastRunAt: string | null;
   lastRunResult: string | null;
+  /** Contact requests sent in the most recent scheduled run (null if none yet). */
+  lastRunRequestsSent: number | null;
+  /** Monotonic counter incremented once per completed scheduled run. The
+   *  renderer watches this to detect a finished run (refresh UI, advance the
+   *  free-trial counter) without the scheduler needing to reach the renderer. */
+  runSeq: number;
 }
 
 // ---------------------------------------------------------------------------

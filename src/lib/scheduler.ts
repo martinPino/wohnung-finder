@@ -22,6 +22,8 @@ declare global {
     nextRunAt: Date | null;
     lastRunAt: string | null;
     lastRunResult: string | null;
+    lastRunRequestsSent: number | null;
+    runSeq: number;
     isRunning: boolean;
     config: { enabled: boolean; intervalMinutes: number };
   } | undefined;
@@ -35,6 +37,8 @@ function getGlobal() {
       nextRunAt: null,
       lastRunAt: null,
       lastRunResult: null,
+      lastRunRequestsSent: null,
+      runSeq: 0,
       isRunning: false,
       config: { ...persisted },
     };
@@ -78,6 +82,7 @@ async function triggerAutomation(): Promise<void> {
   g.isRunning = true;
   g.lastRunAt = new Date().toISOString();
   g.lastRunResult = "running…";
+  g.lastRunRequestsSent = 0;
   scheduleNextRun();
 
   try {
@@ -102,11 +107,15 @@ async function triggerAutomation(): Promise<void> {
     const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     const result = await runAutomation(config, false);
     g.lastRunResult = `Found ${result.listingsFound}, sent ${result.requestsSent}.`;
+    g.lastRunRequestsSent = result.requestsSent;
   } catch (err) {
     g.lastRunResult = `Error: ${err instanceof Error ? err.message : String(err)}`;
     console.error("[scheduler] error:", err);
   } finally {
     g.isRunning = false;
+    // Signal completion so the renderer can refresh the UI and advance the
+    // free-trial counter (it watches runSeq via GET /api/schedule).
+    g.runSeq++;
   }
 }
 
@@ -153,6 +162,8 @@ export function getScheduleStatus(): ScheduleStatus {
     nextRunAt: g.nextRunAt?.toISOString() ?? null,
     lastRunAt: g.lastRunAt,
     lastRunResult: g.isRunning ? "running…" : g.lastRunResult,
+    lastRunRequestsSent: g.lastRunRequestsSent,
+    runSeq: g.runSeq,
   };
 }
 

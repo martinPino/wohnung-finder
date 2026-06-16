@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import FilterForm from "@/components/FilterForm";
 import MessageForm from "@/components/MessageForm";
@@ -15,7 +15,7 @@ import {
   DEFAULT_FILTERS, DEFAULT_FILTER_TOGGLES,
   DEFAULT_CREDENTIALS, DEFAULT_CONTACT_MESSAGE, STORAGE_KEYS,
 } from "@/utils/storage";
-import type { AutomationState, RunAutomationRequest } from "@/types";
+import type { AutomationState, RunAutomationRequest, ScheduleStatus } from "@/types";
 
 const INITIAL_STATE: AutomationState = { status: "idle", listingsFound: 0, requestsSent: 0, logs: [] };
 type Tab = "filters" | "message" | "contacted" | "schedule";
@@ -25,7 +25,7 @@ const LANG_LABELS: Record<Lang, string> = { de: "DE", en: "EN", es: "ES" };
 
 export default function Home() {
   const { lang, setLang, t } = useLang();
-  const { isPaid, isTrial, trialRemaining, recordUsage } = useLicense();
+  const { isPaid, isTrial, trialRemaining, recordUsage, entitled, loading: licenseLoading, hasBridge } = useLicense();
   const { show: showOnboarding, complete: completeOnboarding, reopen: reopenOnboarding } = useOnboarding();
   const [activeTab, setActiveTab] = useState<Tab>("filters");
   const [automationState, setAutomationState] = useState<AutomationState>(INITIAL_STATE);
@@ -35,11 +35,69 @@ export default function Home() {
   const [credentials, setCredentials] = useLocalStorage(STORAGE_KEYS.CREDENTIALS, DEFAULT_CREDENTIALS);
   const [contactMessage, setContactMessage] = useLocalStorage(STORAGE_KEYS.CONTACT_MESSAGE, DEFAULT_CONTACT_MESSAGE);
 
+  // Bumped to force StatusPanel to re-fetch contacted listings (e.g. right
+  // after a background scheduled run finishes).
+  const [contactedRefreshKey, setContactedRefreshKey] = useState(0);
+  // Latest scheduler status, so the Status panel can reflect background runs
+  // instead of showing the idle "waiting to start" placeholder.
+  const [scheduleStatus, setScheduleStatus] = useState<ScheduleStatus | null>(null);
+  // Last scheduled-run sequence we've already accounted for. null until the
+  // first poll so we don't re-report a run that finished before the app opened.
+  const lastRunSeqRef = useRef<number | null>(null);
+
   // One-time migration: drop legacy email/password fields that older versions
   // stored in localStorage; only isPremiumAccount is used now.
   useEffect(() => {
     setCredentials((prev) => ({ isPremiumAccount: prev.isPremiumAccount }));
   }, [setCredentials]);
+
+  // Watch the scheduler for completed background runs. The scheduled run happens
+  // server-side (no renderer involvement), so we poll its status and, on each
+  // newly-finished run, (1) refresh the contacted UI and (2) advance the free
+  // trial counter via recordUsage — the renderer is where the machineId lives.
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/schedule");
+        const s = (await res.json()) as ScheduleStatus;
+        if (cancelled) return;
+        setScheduleStatus(s);
+        const seq = s.runSeq ?? 0;
+        if (lastRunSeqRef.current === null) {
+          lastRunSeqRef.current = seq; // baseline; don't report pre-existing runs
+          return;
+        }
+        if (seq > lastRunSeqRef.current) {
+          lastRunSeqRef.current = seq;
+          setContactedRefreshKey((k) => k + 1);
+          const sent = s.lastRunRequestsSent ?? 0;
+          if (!isPaid && sent > 0) recordUsage(sent);
+        }
+      } catch { /* ignore */ }
+    };
+    poll();
+    const id = setInterval(poll, 5000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isPaid, recordUsage]);
+
+  // Safety: once the trial is exhausted / the license isn't valid, stop the
+  // background scheduler so it can't keep contacting past the paywall.
+  useEffect(() => {
+    if (licenseLoading || !hasBridge || entitled) return;
+    (async () => {
+      try {
+        const res = await fetch("/api/schedule");
+        const s = (await res.json()) as ScheduleStatus;
+        if (!s.enabled) return;
+        await fetch("/api/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: false, intervalMinutes: s.intervalMinutes }),
+        });
+      } catch { /* ignore */ }
+    })();
+  }, [entitled, licenseLoading, hasBridge]);
 
   const addLog = (level: AutomationState["logs"][number]["level"], message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -186,7 +244,7 @@ export default function Home() {
 
                 {/* Panels */}
                 <div className="p-5">
-                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} isPremiumAccount={credentials.isPremiumAccount} onPremiumChange={(v) => setCredentials({ ...credentials, isPremiumAccount: v })} isPaid={isPaid} t={t} />}
+                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} isPremiumAccount={credentials.isPremiumAccount} onPremiumChange={(v) => setCredentials({ ...credentials, isPremiumAccount: v })} isPaid={isPaid} trialRemaining={trialRemaining} t={t} />}
                   {activeTab === "message"   && <MessageForm message={contactMessage} onChange={setContactMessage} t={t} />}
                   {activeTab === "contacted" && <ContactedList t={t} />}
                   {activeTab === "schedule"  && <ScheduleForm t={t} appConfig={{ filters, filterToggles, credentials, contactMessage }} />}
@@ -211,7 +269,7 @@ export default function Home() {
 
             {/* Right — status */}
             <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <StatusPanel state={automationState} onStop={handleStop} onSeeAll={() => setActiveTab("contacted")} t={t} />
+              <StatusPanel state={automationState} onStop={handleStop} onSeeAll={() => setActiveTab("contacted")} refreshKey={contactedRefreshKey} schedule={scheduleStatus} t={t} />
             </div>
           </div>
         </div>

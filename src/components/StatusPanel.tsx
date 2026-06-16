@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { AutomationState, ContactedListing } from "@/types";
+import type { AutomationState, ContactedListing, ScheduleStatus } from "@/types";
 import type { T } from "@/lib/i18n";
 
 interface StatusPanelProps {
   state: AutomationState;
   onStop: () => void;
   onSeeAll: () => void;
+  /** Bump to force an immediate re-fetch of contacted listings (e.g. a
+   *  background scheduled run just finished). */
+  refreshKey?: number;
+  /** Latest scheduler status, so background runs are reflected here instead of
+   *  the idle "waiting to start" placeholder. */
+  schedule?: ScheduleStatus | null;
   t: T;
 }
 
@@ -180,7 +186,7 @@ function DayChart({ series, t }: { series: DayPoint[]; t: T }) {
   );
 }
 
-export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelProps) {
+export default function StatusPanel({ state, onStop, onSeeAll, refreshKey = 0, schedule, t }: StatusPanelProps) {
   const logRef = useRef<HTMLDivElement>(null);
   const [contacted, setContacted] = useState<ContactedListing[]>([]);
   const [range, setRange] = useState<Range>("week");
@@ -189,7 +195,9 @@ export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelP
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [state.logs]);
 
-  // Load contacted listings, and refresh whenever a run finishes (status change).
+  // Load contacted listings, refresh whenever a run finishes (manual status
+  // change or a background scheduled run via refreshKey), and poll on an
+  // interval so contacts made by the scheduler appear without a manual reload.
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -200,11 +208,22 @@ export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelP
       } catch { /* ignore */ }
     };
     load();
-    return () => { cancelled = true; };
-  }, [state.status]);
+    const id = setInterval(load, 15000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [state.status, refreshKey]);
 
   const recent = contacted.slice(0, 3);
   const series = useMemo(() => buildSeries(contacted, range), [contacted, range]);
+
+  // A scheduled run reports server-side; reflect it here when no manual run is
+  // active so the panel doesn't show the idle "waiting to start" placeholder.
+  const scheduleRunning = schedule?.lastRunResult === "running…";
+  const effectiveStatus: AutomationState["status"] =
+    state.status !== "idle" ? state.status : scheduleRunning ? "running" : "idle";
+  const lastScheduledResult =
+    schedule?.lastRunResult && schedule.lastRunResult !== "running…"
+      ? schedule.lastRunResult
+      : null;
 
   const STATUS_LABELS: Record<AutomationState["status"], string> = {
     idle:    t.statusIdle,
@@ -238,14 +257,28 @@ export default function StatusPanel({ state, onStop, onSeeAll, t }: StatusPanelP
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">{t.statusTitle}</h2>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[state.status]}`}>
-          {STATUS_LABELS[state.status]}
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[effectiveStatus]}`}>
+          {STATUS_LABELS[effectiveStatus]}
         </span>
       </div>
 
       <div ref={logRef} className="h-48 overflow-y-auto rounded-md bg-gray-900 p-3 font-mono text-xs leading-relaxed">
         {state.logs.length === 0 ? (
-          <span className="text-gray-500">{t.waitingToStart}</span>
+          scheduleRunning ? (
+            <span className="text-blue-400">{t.statusScheduleRunning}</span>
+          ) : schedule?.enabled ? (
+            <div className="space-y-1">
+              <div className="text-green-400">{t.statusScheduleWaiting}</div>
+              {lastScheduledResult && (
+                <div className="text-gray-400">
+                  <span className="text-gray-500 select-none">{t.lastResult}: </span>
+                  {lastScheduledResult}
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className="text-gray-500">{t.waitingToStart}</span>
+          )
         ) : (
           state.logs.map((entry, i) => (
             <div key={i} className={LOG_COLORS[entry.level]}>

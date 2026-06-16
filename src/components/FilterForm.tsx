@@ -8,13 +8,12 @@ interface FilterFormProps {
   onTogglesChange: (toggles: FilterToggles) => void;
   isPremiumAccount: boolean;
   onPremiumChange: (value: boolean) => void;
-  /** True for a paid license. Free/trial users are capped at TRIAL_LIMIT (20). */
+  /** True for a paid license. Free/trial users are capped at the remaining trial. */
   isPaid: boolean;
+  /** Free-trial contact requests still left (caps "requests per run" for trial users). */
+  trialRemaining: number;
   t: T;
 }
-
-/** Free-trial cap for "requests per run" (matches TRIAL_LIMIT in the backend). */
-const TRIAL_MAX_PER_RUN = 20;
 
 type ToggleKey = keyof FilterToggles;
 
@@ -69,8 +68,10 @@ function SearchSummary({ filters, toggles, t }: { filters: SearchFilters; toggle
   );
 }
 
-export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, isPremiumAccount, onPremiumChange, isPaid, t }: FilterFormProps) {
-  const maxPerRun = isPaid ? 50 : TRIAL_MAX_PER_RUN;
+export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, isPremiumAccount, onPremiumChange, isPaid, trialRemaining, t }: FilterFormProps) {
+  // Trial users can't request more than the contacts they have left; never let
+  // the input cap drop to 0 (the paywall takes over once nothing remains).
+  const maxPerRun = isPaid ? 50 : Math.max(1, trialRemaining);
   const setFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) =>
     onFiltersChange({ ...filters, [key]: value });
 
