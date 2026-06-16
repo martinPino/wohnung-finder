@@ -17,31 +17,55 @@
   </style>
 </head>
 <body>
-  <div class="box">
-    <div class="spin"></div>
-    <p>Sicheres Bezahlen wird geöffnet…</p>
+  <div class="box" id="box">
+    <div class="spin" id="spin"></div>
+    <p id="msg">Sicheres Bezahlen wird geöffnet…</p>
     <p id="fallback" style="font-size:.85rem;color:#9ca3af"></p>
   </div>
 
   <!-- Paddle Billing default payment link page.
        The createCheckout Cloud Function returns this page's URL with a
        ?_ptxn=<transaction_id> parameter; Paddle.js auto-opens the checkout
-       overlay for that transaction — no extra code needed. -->
+       overlay for that transaction. We also listen for checkout events so the
+       page shows a clear result instead of an endless spinner. -->
   <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
   <script>
     (function () {
+      // Replace the spinner with a final message.
+      function done(title, sub, ok) {
+        var spin = document.getElementById("spin");
+        if (spin) spin.style.display = "none";
+        document.getElementById("msg").innerHTML =
+          (ok ? '<span style="color:#16a34a;font-size:2rem;display:block;margin-bottom:.5rem">✓</span>' : "") +
+          '<strong>' + title + '</strong>';
+        document.getElementById("fallback").textContent = sub || "";
+      }
+
       // While testing use sandbox; for the LIVE site remove this line.
       Paddle.Environment.set("sandbox");
 
       // Public client-side token (test_... in sandbox, live_... in production).
       // Paddle ▸ Developer Tools ▸ Authentication ▸ Client-side tokens.
-      Paddle.Initialize({ token: "test_a208d9e8b795f7a0a615d7266be" });
+      Paddle.Initialize({
+        token: "test_a208d9e8b795f7a0a615d7266be",
+        eventCallback: function (ev) {
+          if (!ev || !ev.name) return;
+          if (ev.name === "checkout.completed") {
+            done(
+              "Kauf erfolgreich!",
+              "Du kannst dieses Fenster schließen und zur WohnungFinder-App zurückkehren. Klicke dort auf „Lizenz wiederherstellen“.",
+              true
+            );
+          } else if (ev.name === "checkout.closed") {
+            done("Checkout geschlossen.", "Du kannst dieses Fenster schließen.", false);
+          }
+        },
+      });
 
       // If there is no transaction in the URL, show a hint instead of a blank page.
       var hasTxn = /[?&]_ptxn=/.test(window.location.search);
       if (!hasTxn) {
-        document.getElementById("fallback").textContent =
-          "Bitte starte den Kauf aus der WohnungFinder-App.";
+        done("Kein Kauf gestartet.", "Bitte starte den Kauf aus der WohnungFinder-App.", false);
       }
     })();
   </script>
