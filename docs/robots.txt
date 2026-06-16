@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+
+Sitemap: https://www.wohnung-finder.com/sitemap.xml
