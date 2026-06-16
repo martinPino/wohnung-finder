@@ -375,7 +375,7 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="badge" data-i18n="hero_badge">Kostenlos · Für Mac & Windows</div>
+    <div class="badge" data-i18n="hero_badge">Für Mac & Windows</div>
     <h1 data-i18n-html="hero_h1">Wohnungssuche auf <span>Autopilot</span></h1>
     <p data-i18n="hero_p">WohnungFinder sendet automatisch Kontaktanfragen – mit deinen Filtern, deiner Nachricht, rund um die Uhr. Kompatibel mit ImmoScout24.</p>
     <div class="hero-btns">
@@ -388,7 +388,7 @@
         GitHub
       </a>
     </div>
-    <p class="hero-meta" data-i18n="hero_meta">macOS 12+ oder Windows 10/11 · Kostenlos · Google Chrome erforderlich</p>
+    <p class="hero-meta" data-i18n="hero_meta">macOS 12+ oder Windows 10/11 · Google Chrome erforderlich</p>
   </section>
 
   <!-- SCREENSHOT -->
@@ -493,10 +493,46 @@
     </div>
   </section>
 
+  <!-- PRICING -->
+  <section class="section" style="background: var(--gray-50);">
+    <div class="section-inner">
+      <p class="section-label" data-i18n="pricing_label">Preise</p>
+      <h2 data-i18n="pricing_h2">Einfache, faire Preise</h2>
+      <p class="section-sub" data-i18n="pricing_sub">Kostenlos herunterladen. Lizenz zum Nutzen — monatlich oder einmalig.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:720px;margin:0 auto;">
+        <div style="position:relative;display:flex;flex-direction:column;background:#fff;border:1px solid var(--gray-100);border-radius:16px;padding:1.75rem;">
+          <h3 style="font-size:1.1rem;font-weight:700;" data-i18n="pricing_monthly_name">Monatlich</h3>
+          <div style="margin:.5rem 0 1rem;"><span style="font-size:2.25rem;font-weight:800;">9 €</span><span style="color:var(--gray-400);font-weight:600;" data-i18n="pricing_monthly_cadence"> / Monat</span></div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:.55rem;flex:1;font-size:.9rem;color:var(--gray-600);">
+            <li>✓ <span data-i18n="pricing_m_f1">Voller Funktionsumfang</span></li>
+            <li>✓ <span data-i18n="pricing_m_f2">Automatische Überwachung 24/7</span></li>
+            <li>✓ <span data-i18n="pricing_m_f3">Jederzeit kündbar</span></li>
+          </ul>
+        </div>
+        <div style="position:relative;display:flex;flex-direction:column;background:#fff;border:2px solid var(--blue);border-radius:16px;padding:1.75rem;">
+          <span style="position:absolute;top:-.7rem;right:1.5rem;background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:.2rem .65rem;border-radius:99px;" data-i18n="pricing_popular">Beliebt</span>
+          <h3 style="font-size:1.1rem;font-weight:700;" data-i18n="pricing_lifetime_name">Lifetime</h3>
+          <div style="margin:.5rem 0 1rem;"><span style="font-size:2.25rem;font-weight:800;">29 €</span><span style="color:var(--gray-400);font-weight:600;" data-i18n="pricing_lifetime_cadence"> einmalig</span></div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:.55rem;flex:1;font-size:.9rem;color:var(--gray-600);">
+            <li>✓ <span data-i18n="pricing_l_f1">Einmal zahlen, für immer nutzen</span></li>
+            <li>✓ <span data-i18n="pricing_l_f2">Alle zukünftigen Updates inklusive</span></li>
+            <li>✓ <span data-i18n="pricing_l_f3">Kein Abo, keine Kündigung nötig</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <p style="text-align:center;color:var(--gray-400);font-size:.85rem;margin-top:1.5rem;" data-i18n="pricing_note">Preise inkl. MwSt. · Kauf direkt in der App · Monatlich jederzeit kündbar</p>
+      <div style="text-align:center;margin-top:1.25rem;">
+        <a class="btn-primary" href="https://github.com/martinPino/wohnung-finder/releases/latest" target="_blank" data-i18n="pricing_cta">Herunterladen &amp; loslegen</a>
+      </div>
+    </div>
+  </section>
+
   <!-- BOTTOM CTA -->
   <section class="cta-section">
     <h2 data-i18n="cta_h2">Starte deine Wohnungssuche heute</h2>
-    <p data-i18n="cta_p">Kostenlos herunterladen. Kein Account, keine Kreditkarte.</p>
+    <p data-i18n="cta_p">Kostenlos herunterladen. Lizenz ab 9 €/Monat oder 29 € einmalig.</p>
     <a class="btn-white" href="https://github.com/martinPino/wohnung-finder/releases/latest" target="_blank">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span data-i18n="cta_btn">Kostenlos herunterladen</span>
@@ -515,11 +551,11 @@
         _title: "WohnungFinder – Mietwohnungen automatisch anfragen (kompatibel mit ImmoScout24)",
         _desc: "WohnungFinder automatisiert deine Wohnungssuche. Filtere, finde und kontaktiere Vermieter automatisch – kompatibel mit ImmoScout24, kostenlos für Mac & Windows.",
         nav_cta: "Kostenlos herunterladen",
-        hero_badge: "Kostenlos · Für Mac & Windows",
+        hero_badge: "Für Mac & Windows",
         hero_h1: 'Wohnungssuche auf <span>Autopilot</span>',
         hero_p: "WohnungFinder sendet automatisch Kontaktanfragen – mit deinen Filtern, deiner Nachricht, rund um die Uhr. Kompatibel mit ImmoScout24.",
         hero_btn_primary: "Kostenlos herunterladen",
-        hero_meta: "macOS 12+ oder Windows 10/11 · Kostenlos · Google Chrome erforderlich",
+        hero_meta: "macOS 12+ oder Windows 10/11 · Google Chrome erforderlich",
         feat_label: "Features",
         feat_h2: "Alles was du brauchst",
         feat_sub: "Konfiguriere einmal, lass WohnungFinder den Rest erledigen.",
@@ -553,20 +589,36 @@
         req3: "ImmoScout24-Konto (kostenlos)",
         req4: "Internetverbindung",
         cta_h2: "Starte deine Wohnungssuche heute",
-        cta_p: "Kostenlos herunterladen. Kein Account, keine Kreditkarte.",
+        cta_p: "Kostenlos herunterladen. Lizenz ab 9 €/Monat oder 29 € einmalig.",
         cta_btn: "Kostenlos herunterladen",
         cta_meta: "Für Mac & Windows · Open Source · Keine Datensammlung",
+        pricing_label: "Preise",
+        pricing_h2: "Einfache, faire Preise",
+        pricing_sub: "Kostenlos herunterladen. Lizenz zum Nutzen — monatlich oder einmalig.",
+        pricing_monthly_name: "Monatlich",
+        pricing_monthly_cadence: " / Monat",
+        pricing_m_f1: "Voller Funktionsumfang",
+        pricing_m_f2: "Automatische Überwachung 24/7",
+        pricing_m_f3: "Jederzeit kündbar",
+        pricing_lifetime_name: "Lifetime",
+        pricing_lifetime_cadence: " einmalig",
+        pricing_popular: "Beliebt",
+        pricing_l_f1: "Einmal zahlen, für immer nutzen",
+        pricing_l_f2: "Alle zukünftigen Updates inklusive",
+        pricing_l_f3: "Kein Abo, keine Kündigung nötig",
+        pricing_note: "Preise inkl. MwSt. · Kauf direkt in der App · Monatlich jederzeit kündbar",
+        pricing_cta: "Herunterladen & loslegen",
         footer_text: "WohnungFinder · " + GH + " · Kompatibel mit ImmoScout24, aber kein offizielles Produkt und nicht mit der ImmobilienScout GmbH verbunden. ImmoScout24® ist eine eingetragene Marke ihrer jeweiligen Inhaber."
       },
       en: {
         _title: "WohnungFinder – Contact rental listings automatically (compatible with ImmoScout24)",
-        _desc: "WohnungFinder automates your apartment search. Filter, find and contact landlords automatically – compatible with ImmoScout24, free for Mac & Windows.",
+        _desc: "WohnungFinder automates your apartment search. Filter, find and contact landlords automatically – compatible with ImmoScout24, for Mac & Windows.",
         nav_cta: "Download free",
-        hero_badge: "Free · Mac & Windows",
+        hero_badge: "For Mac & Windows",
         hero_h1: 'Apartment hunting on <span>autopilot</span>',
         hero_p: "WohnungFinder automatically sends contact requests — with your filters, your message, around the clock. Compatible with ImmoScout24.",
         hero_btn_primary: "Download free",
-        hero_meta: "macOS 12+ or Windows 10/11 · Free · Google Chrome required",
+        hero_meta: "macOS 12+ or Windows 10/11 · Google Chrome required",
         feat_label: "Features",
         feat_h2: "Everything you need",
         feat_sub: "Set it up once, let WohnungFinder do the rest.",
@@ -600,20 +652,36 @@
         req3: "ImmoScout24 account (free)",
         req4: "Internet connection",
         cta_h2: "Start your apartment search today",
-        cta_p: "Download free. No account, no credit card.",
+        cta_p: "Free download. License from €9/month or €29 one-time.",
         cta_btn: "Download free",
         cta_meta: "For Mac & Windows · Open source · No data collection",
+        pricing_label: "Pricing",
+        pricing_h2: "Simple, fair pricing",
+        pricing_sub: "Download free. License to use — monthly or one-time.",
+        pricing_monthly_name: "Monthly",
+        pricing_monthly_cadence: " / month",
+        pricing_m_f1: "Full feature set",
+        pricing_m_f2: "Automatic monitoring 24/7",
+        pricing_m_f3: "Cancel anytime",
+        pricing_lifetime_name: "Lifetime",
+        pricing_lifetime_cadence: " one-time",
+        pricing_popular: "Popular",
+        pricing_l_f1: "Pay once, use forever",
+        pricing_l_f2: "All future updates included",
+        pricing_l_f3: "No subscription, no cancellation",
+        pricing_note: "Prices incl. VAT · Purchase in the app · Cancel monthly anytime",
+        pricing_cta: "Download & get started",
         footer_text: "WohnungFinder · " + GH + " · Compatible with ImmoScout24, but not an official product and not affiliated with ImmobilienScout GmbH. ImmoScout24® is a registered trademark of its respective owners."
       },
       es: {
         _title: "WohnungFinder – Contacta anuncios de alquiler automáticamente (compatible con ImmoScout24)",
-        _desc: "WohnungFinder automatiza tu búsqueda de piso. Filtra, encuentra y contacta caseros automáticamente – compatible con ImmoScout24, gratis para Mac y Windows.",
+        _desc: "WohnungFinder automatiza tu búsqueda de piso. Filtra, encuentra y contacta caseros automáticamente – compatible con ImmoScout24, para Mac y Windows.",
         nav_cta: "Descargar gratis",
-        hero_badge: "Gratis · Mac y Windows",
+        hero_badge: "Para Mac y Windows",
         hero_h1: 'Búsqueda de piso en <span>piloto automático</span>',
         hero_p: "WohnungFinder envía solicitudes de contacto automáticamente — con tus filtros, tu mensaje, las 24 horas. Compatible con ImmoScout24.",
         hero_btn_primary: "Descargar gratis",
-        hero_meta: "macOS 12+ o Windows 10/11 · Gratis · Requiere Google Chrome",
+        hero_meta: "macOS 12+ o Windows 10/11 · Requiere Google Chrome",
         feat_label: "Funciones",
         feat_h2: "Todo lo que necesitas",
         feat_sub: "Configúralo una vez y deja que WohnungFinder haga el resto.",
@@ -647,9 +715,25 @@
         req3: "Cuenta de ImmoScout24 (gratis)",
         req4: "Conexión a internet",
         cta_h2: "Empieza tu búsqueda de piso hoy",
-        cta_p: "Descarga gratis. Sin cuenta, sin tarjeta de crédito.",
+        cta_p: "Descarga gratis. Licencia desde 9 €/mes o 29 € pago único.",
         cta_btn: "Descargar gratis",
         cta_meta: "Para Mac y Windows · Open source · Sin recopilación de datos",
+        pricing_label: "Precios",
+        pricing_h2: "Precios simples y justos",
+        pricing_sub: "Descarga gratis. Licencia para usar — mensual o pago único.",
+        pricing_monthly_name: "Mensual",
+        pricing_monthly_cadence: " / mes",
+        pricing_m_f1: "Todas las funciones",
+        pricing_m_f2: "Monitoreo automático 24/7",
+        pricing_m_f3: "Cancela cuando quieras",
+        pricing_lifetime_name: "Lifetime",
+        pricing_lifetime_cadence: " pago único",
+        pricing_popular: "Popular",
+        pricing_l_f1: "Paga una vez, úsalo para siempre",
+        pricing_l_f2: "Todas las actualizaciones futuras incluidas",
+        pricing_l_f3: "Sin suscripción, sin cancelación",
+        pricing_note: "Precios con IVA · Compra dentro de la app · Cancela el mensual cuando quieras",
+        pricing_cta: "Descargar y empezar",
         footer_text: "WohnungFinder · " + GH + " · Compatible con ImmoScout24, pero no es un producto oficial ni está afiliado a ImmobilienScout GmbH. ImmoScout24® es una marca registrada de sus respectivos propietarios."
       }
     };
