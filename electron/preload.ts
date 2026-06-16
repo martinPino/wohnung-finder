@@ -27,12 +27,13 @@ const CH = {
   refresh: "license:refresh",
   buy: "license:buy",
   openPortal: "license:openPortal",
+  recordUsage: "license:recordUsage",
   changed: "license:changed",
 } as const;
 
 // --- Types (structurally identical to src/types/license.d.ts) --------------
 
-type LicenseStatus = "inactive" | "active" | "expired" | "loading";
+type LicenseStatus = "inactive" | "active" | "trial" | "expired" | "loading";
 type LicensePlan = "monthly" | "lifetime" | "none";
 type BuyablePlan = "monthly" | "lifetime";
 
@@ -43,6 +44,8 @@ interface LicenseState {
   customerId: string | null;
   subscriptionId: string | null;
   lastCheckedAt: string | null;
+  trialUsed: number;
+  trialLimit: number;
 }
 
 interface LicenseBridge {
@@ -54,6 +57,8 @@ interface LicenseBridge {
   buy(plan: BuyablePlan): Promise<void>;
   /** Open the Paddle customer portal / cancel page in the system browser. */
   openPortal(): Promise<void>;
+  /** Report consumed free-trial contacts; resolves with the refreshed snapshot. */
+  recordUsage(count: number): Promise<LicenseState>;
   /**
    * Subscribe to license changes pushed from the main process.
    * Returns an unsubscribe function.
@@ -68,6 +73,7 @@ const licenseBridge: LicenseBridge = {
   refresh: () => ipcRenderer.invoke(CH.refresh),
   buy: (plan: BuyablePlan) => ipcRenderer.invoke(CH.buy, plan),
   openPortal: () => ipcRenderer.invoke(CH.openPortal),
+  recordUsage: (count: number) => ipcRenderer.invoke(CH.recordUsage, count),
   onChange: (listener) => {
     // Wrap so we don't leak the raw IpcRendererEvent to the renderer.
     const wrapped = (_event: IpcRendererEvent, state: LicenseState) =>

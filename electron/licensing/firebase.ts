@@ -62,6 +62,10 @@ export interface LicenseDoc {
   customerEmail?: string | null;
   subscriptionId?: string | null;
   expiresAt?: string | null;
+  /** Free-trial contact requests already used on this machine. */
+  trialContactsUsed?: number | null;
+  /** True once this machine has ever paid (blocks a second free trial). */
+  everPaid?: boolean | null;
   updatedAt?: unknown;
 }
 

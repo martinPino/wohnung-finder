@@ -126,4 +126,6 @@ export interface RunAutomationRequest {
 export interface RunAutomationResponse {
   ok: boolean;
   message: string;
+  /** Contact requests actually sent this run (used to advance the free-trial counter). */
+  requestsSent?: number;
 }

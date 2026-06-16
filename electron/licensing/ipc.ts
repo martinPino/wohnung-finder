@@ -18,7 +18,7 @@
 import { ipcMain, webContents, type IpcMain } from "electron";
 // Canonical verification core (online-first, offline-grace, clock-rollback
 // guard). Returns a LicenseState per the renderer contract.
-import { verifyLicense } from "./license";
+import { verifyLicense, recordTrialUsage } from "./license";
 import type { LicenseState } from "./types";
 import { buy, openPortal, type BuyablePlan } from "./paddle";
 
@@ -28,6 +28,7 @@ export const LICENSE_CHANNELS = {
   refresh: "license:refresh",
   buy: "license:buy",
   openPortal: "license:openPortal",
+  recordUsage: "license:recordUsage",
   changed: "license:changed",
 } as const;
 
@@ -58,10 +59,23 @@ export async function refreshLicense(): Promise<LicenseState> {
     currentState.status !== next.status ||
     currentState.plan !== next.plan ||
     currentState.subscriptionId !== next.subscriptionId ||
-    currentState.customerId !== next.customerId;
+    currentState.customerId !== next.customerId ||
+    currentState.trialUsed !== next.trialUsed;
 
   currentState = next;
   if (changed) broadcast(next);
+  return next;
+}
+
+/**
+ * Report `count` consumed free-trial contacts to the backend, refresh the
+ * cached state, and broadcast the change (so the trial counter / paywall in
+ * the renderer update immediately).
+ */
+export async function reportTrialUsage(count: number): Promise<LicenseState> {
+  const next = await recordTrialUsage(count);
+  currentState = next;
+  broadcast(next);
   return next;
 }
 
@@ -105,4 +119,12 @@ export function registerLicenseIpc(ipc: IpcMain = ipcMain): void {
   ipc.handle(LICENSE_CHANNELS.openPortal, async (): Promise<void> => {
     await openPortal();
   });
+
+  // Report consumed free-trial contacts (server-authoritative counter).
+  ipc.handle(
+    LICENSE_CHANNELS.recordUsage,
+    async (_event, count: number): Promise<LicenseState> => {
+      return reportTrialUsage(typeof count === "number" ? count : 0);
+    }
+  );
 }

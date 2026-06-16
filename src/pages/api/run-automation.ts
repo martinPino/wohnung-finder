@@ -42,6 +42,7 @@ export default async function handler(
     return res.status(200).json({
       ok: true,
       message: `Done. Found ${result.listingsFound} listing(s), sent ${result.requestsSent} request(s).`,
+      requestsSent: result.requestsSent,
     });
   } catch (err) {
     console.error("[run-automation] Error:", err);

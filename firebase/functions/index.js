@@ -55,6 +55,10 @@ const PADDLE_ENV = defineString('PADDLE_ENV', { default: 'sandbox' });
 const PRICE_MONTHLY = defineString('PRICE_MONTHLY');
 const PRICE_LIFETIME = defineString('PRICE_LIFETIME');
 
+// Free-trial contact-request limit per machine (must match the desktop app's
+// TRIAL_LIMIT in electron/licensing/config.ts).
+const TRIAL_LIMIT = 20;
+
 // Bind the secrets each function needs. Binding is per-function: a secret not
 // listed here is `undefined` at runtime even if it exists in Secret Manager.
 const WEBHOOK_SECRETS = [PADDLE_WEBHOOK_SECRET, PADDLE_API_KEY];
@@ -80,7 +84,9 @@ function resolvePaddleEnvironment() {
  * @returns {Paddle}
  */
 function buildPaddleClient() {
-  return new Paddle(PADDLE_API_KEY.value(), {
+  // .trim() defends against a trailing space/newline accidentally captured when
+  // the API key was pasted into Secret Manager (-> Paddle "authentication_malformed").
+  return new Paddle((PADDLE_API_KEY.value() || '').trim(), {
     environment: resolvePaddleEnvironment(),
   });
 }
@@ -234,6 +240,9 @@ function buildLicenseFields(eventType, data) {
     subscriptionId,
     lastEvent: eventType,
     updatedAt: FieldValue.serverTimestamp(),
+    // Mark that this machine has paid at least once, so the free trial is not
+    // granted again after a subscription is cancelled / lapses.
+    everPaid: true,
   };
 
   // expiresAt as an ISO string (matches the desktop reader, which runs
@@ -291,7 +300,7 @@ exports.paddleWebhook = onRequest(
     // The webhooks API only needs the API key for client construction; the
     // signature is verified against the per-destination webhook secret.
     const paddle = buildPaddleClient();
-    const webhookSecret = PADDLE_WEBHOOK_SECRET.value();
+    const webhookSecret = (PADDLE_WEBHOOK_SECRET.value() || '').trim();
 
     let event;
     try {
@@ -527,6 +536,64 @@ exports.customerPortal = onRequest(
     }
   },
 );
+
+// ===========================================================================
+// 4) recordTrialUsage — increment the device's free-trial contact counter
+// ===========================================================================
+//
+// Request (POST JSON): { "machineId": "<sha256>", "count": <int> }
+// Response:            { trialContactsUsed, limit, remaining, everPaid }
+//
+// The free trial allows TRIAL_LIMIT contact requests per machine, tracked
+// server-side so it cannot be reset by clearing local data or reinstalling.
+// Paid machines (everPaid) never accrue trial usage.
+exports.recordTrialUsage = onRequest({ cors: false }, async (req, res) => {
+  if (applyCors(req, res)) return;
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method Not Allowed' });
+    return;
+  }
+
+  const machineId = readField(req, 'machineId');
+  if (!isValidMachineId(machineId)) {
+    res.status(400).json({ error: 'invalid machineId' });
+    return;
+  }
+
+  let count = Number(readField(req, 'count'));
+  if (!Number.isFinite(count) || count <= 0) count = 0;
+  count = Math.min(Math.floor(count), TRIAL_LIMIT); // clamp to a sane amount
+
+  try {
+    const ref = db.collection('licenses').doc(machineId);
+    const snap = await ref.get();
+    const data = snap.exists ? snap.data() : {};
+    const prevUsed = data.trialContactsUsed || 0;
+
+    // Paid machines never accrue trial usage.
+    if (data.everPaid === true) {
+      res.status(200).json({ everPaid: true, trialContactsUsed: prevUsed, limit: TRIAL_LIMIT, remaining: 0 });
+      return;
+    }
+
+    if (count > 0) {
+      await ref.set(
+        { trialContactsUsed: FieldValue.increment(count), updatedAt: FieldValue.serverTimestamp() },
+        { merge: true },
+      );
+    }
+    const used = prevUsed + count;
+    res.status(200).json({
+      everPaid: false,
+      trialContactsUsed: used,
+      limit: TRIAL_LIMIT,
+      remaining: Math.max(0, TRIAL_LIMIT - used),
+    });
+  } catch (err) {
+    logger.error('Failed to record trial usage', err);
+    res.status(500).json({ error: 'failed to record trial usage' });
+  }
+});
 
 // ---------------------------------------------------------------------------
 // One-time devops setup (run from firebase/ with the Firebase CLI):

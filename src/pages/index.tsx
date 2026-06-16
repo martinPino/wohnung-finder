@@ -9,6 +9,7 @@ import Onboarding, { useOnboarding } from "@/components/Onboarding";
 import { ManageSubscriptionLink } from "@/components/LicenseGate";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useLang } from "@/hooks/useLang";
+import { useLicense } from "@/hooks/useLicense";
 import { type Lang } from "@/lib/i18n";
 import {
   DEFAULT_FILTERS, DEFAULT_FILTER_TOGGLES,
@@ -24,6 +25,7 @@ const LANG_LABELS: Record<Lang, string> = { de: "DE", en: "EN", es: "ES" };
 
 export default function Home() {
   const { lang, setLang, t } = useLang();
+  const { isPaid, isTrial, trialRemaining, recordUsage } = useLicense();
   const { show: showOnboarding, complete: completeOnboarding, reopen: reopenOnboarding } = useOnboarding();
   const [activeTab, setActiveTab] = useState<Tab>("filters");
   const [automationState, setAutomationState] = useState<AutomationState>(INITIAL_STATE);
@@ -46,14 +48,29 @@ export default function Home() {
 
   const handleStart = async () => {
     if (!filters.location.trim()) { alert(t.locationLabel + "?"); return; }
+
+    // During the free trial, cap this run to the remaining free contacts so the
+    // user never exceeds the 20-request trial. Paid users use their own setting.
+    const runFilters =
+      isPaid
+        ? filters
+        : { ...filters, maxRequestsPerRun: Math.min(filters.maxRequestsPerRun, trialRemaining) };
+
     setAutomationState({ ...INITIAL_STATE, status: "running" });
     addLog("info", t.running);
-    const body: RunAutomationRequest = { config: { filters, filterToggles, credentials, contactMessage } };
+    const body: RunAutomationRequest = {
+      config: { filters: runFilters, filterToggles, credentials, contactMessage },
+    };
     try {
       const res = await fetch("/api/run-automation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
       addLog(res.ok ? "info" : "error", data.message);
       setAutomationState((prev) => ({ ...prev, status: res.ok ? "done" : "error" }));
+      // On a trial run, report the contacts sent so the server counter advances
+      // (and the paywall appears once the 20 free contacts are used up).
+      if (res.ok && !isPaid && typeof data.requestsSent === "number" && data.requestsSent > 0) {
+        recordUsage(data.requestsSent);
+      }
     } catch (err) {
       addLog("error", String(err));
       setAutomationState((prev) => ({ ...prev, status: "error" }));
@@ -139,6 +156,16 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Free-trial counter */}
+          {isTrial && (
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5">
+              <span className="text-sm font-medium text-blue-800">
+                🎁 {t.trialRemainingText.replace("{n}", String(trialRemaining)).replace("{limit}", "20")}
+              </span>
+              <span className="text-xs text-blue-600">{t.trialUnlockNotice}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left — config */}
             <div className="lg:col-span-2 space-y-4">
@@ -159,7 +186,7 @@ export default function Home() {
 
                 {/* Panels */}
                 <div className="p-5">
-                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} isPremiumAccount={credentials.isPremiumAccount} onPremiumChange={(v) => setCredentials({ ...credentials, isPremiumAccount: v })} t={t} />}
+                  {activeTab === "filters"   && <FilterForm   filters={filters} toggles={filterToggles} onFiltersChange={setFilters} onTogglesChange={setFilterToggles} isPremiumAccount={credentials.isPremiumAccount} onPremiumChange={(v) => setCredentials({ ...credentials, isPremiumAccount: v })} isPaid={isPaid} t={t} />}
                   {activeTab === "message"   && <MessageForm message={contactMessage} onChange={setContactMessage} t={t} />}
                   {activeTab === "contacted" && <ContactedList t={t} />}
                   {activeTab === "schedule"  && <ScheduleForm t={t} appConfig={{ filters, filterToggles, credentials, contactMessage }} />}

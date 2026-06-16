@@ -8,8 +8,13 @@ interface FilterFormProps {
   onTogglesChange: (toggles: FilterToggles) => void;
   isPremiumAccount: boolean;
   onPremiumChange: (value: boolean) => void;
+  /** True for a paid license. Free/trial users are capped at TRIAL_LIMIT (20). */
+  isPaid: boolean;
   t: T;
 }
+
+/** Free-trial cap for "requests per run" (matches TRIAL_LIMIT in the backend). */
+const TRIAL_MAX_PER_RUN = 20;
 
 type ToggleKey = keyof FilterToggles;
 
@@ -64,7 +69,8 @@ function SearchSummary({ filters, toggles, t }: { filters: SearchFilters; toggle
   );
 }
 
-export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, isPremiumAccount, onPremiumChange, t }: FilterFormProps) {
+export default function FilterForm({ filters, toggles, onFiltersChange, onTogglesChange, isPremiumAccount, onPremiumChange, isPaid, t }: FilterFormProps) {
+  const maxPerRun = isPaid ? 50 : TRIAL_MAX_PER_RUN;
   const setFilter = <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) =>
     onFiltersChange({ ...filters, [key]: value });
 
@@ -201,12 +207,22 @@ export default function FilterForm({ filters, toggles, onFiltersChange, onToggle
           <input
             type="number"
             min={1}
-            max={50}
-            value={filters.maxRequestsPerRun}
-            onChange={(e) => setFilter("maxRequestsPerRun", Math.max(1, Number(e.target.value)))}
+            max={maxPerRun}
+            value={Math.min(filters.maxRequestsPerRun, maxPerRun)}
+            onChange={(e) =>
+              setFilter("maxRequestsPerRun", Math.min(maxPerRun, Math.max(1, Number(e.target.value))))
+            }
             className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-center font-semibold focus:border-blue-500 focus:outline-none"
           />
         </div>
+        {!isPaid && (
+          <p className="mt-2 flex items-center gap-1 text-xs text-blue-600">
+            <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            {t.trialUnlockNotice}
+          </p>
+        )}
       </div>
 
       {/* Premium account */}

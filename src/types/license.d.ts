@@ -14,10 +14,12 @@
 
 /** Lifecycle status of the device-bound license. */
 export type LicenseStatus =
-  /** No valid purchase found for this machine yet. */
+  /** No valid purchase and trial exhausted — paywall. */
   | "inactive"
   /** Paid and currently valid (monthly subscription active, or lifetime). */
   | "active"
+  /** Free trial in progress (some contact requests still left). */
+  | "trial"
   /** Was active but the monthly subscription lapsed / payment failed. */
   | "expired"
   /** Bridge is still resolving the initial state (first read in flight). */
@@ -62,6 +64,10 @@ export interface LicenseState {
    * if it has never synced (e.g. offline on first launch).
    */
   lastCheckedAt: string | null;
+  /** Free-trial contact requests already used (server-tracked). */
+  trialUsed: number;
+  /** Free-trial contact-request limit before the paywall. */
+  trialLimit: number;
 }
 
 /**
@@ -93,6 +99,11 @@ export interface LicenseBridge {
    * freshly-fetched snapshot. Used by the "Lizenz wiederherstellen" button.
    */
   refresh(): Promise<LicenseState>;
+  /**
+   * Report `count` consumed free-trial contact requests to the backend
+   * (server-authoritative counter). Resolves with the refreshed snapshot.
+   */
+  recordUsage(count: number): Promise<LicenseState>;
 }
 
 declare global {

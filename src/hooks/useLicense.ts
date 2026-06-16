@@ -29,6 +29,8 @@ const WEB_FALLBACK_STATE: LicenseState = {
   customerId: null,
   subscriptionId: null,
   lastCheckedAt: null,
+  trialUsed: 0,
+  trialLimit: 20,
 };
 
 /** Initial state shown before the first async getState() resolves. */
@@ -49,12 +51,22 @@ export interface UseLicense {
   hasBridge: boolean;
   /** Convenience flag: license is active (monthly or lifetime). */
   isActive: boolean;
+  /** Paid & valid (status active). */
+  isPaid: boolean;
+  /** In the free trial (status trial, contacts still left). */
+  isTrial: boolean;
+  /** Entitled to use the app: paid OR trial with contacts left. */
+  entitled: boolean;
+  /** Free-trial contacts left (trialLimit - trialUsed, clamped >= 0). */
+  trialRemaining: number;
   /** Start a Paddle checkout for the chosen plan (no-op without a bridge). */
   buy: (plan: BuyablePlan) => Promise<void>;
   /** Open the Paddle customer portal (no-op without a bridge). */
   openPortal: () => Promise<void>;
   /** Re-check the license store; resolves with the latest snapshot. */
   refresh: () => Promise<LicenseState>;
+  /** Report consumed free-trial contacts; resolves with the latest snapshot. */
+  recordUsage: (count: number) => Promise<LicenseState>;
 }
 
 /** Safely grab the bridge, guarding SSR (no `window` during prerender). */
@@ -171,7 +183,37 @@ export function useLicense(): UseLicense {
     }
   }, []);
 
-  const isActive = state.status === "active";
+  const recordUsage = useCallback(async (count: number): Promise<LicenseState> => {
+    const bridge = getBridge();
+    if (!bridge) return stateRef.current;
+    try {
+      const next = await bridge.recordUsage(count);
+      setState(next);
+      return next;
+    } catch (err) {
+      console.warn("[useLicense] recordUsage failed:", err);
+      return stateRef.current;
+    }
+  }, []);
 
-  return { state, loading, hasBridge, isActive, buy, openPortal, refresh };
+  const isPaid = state.status === "active";
+  const isTrial = state.status === "trial";
+  const isActive = isPaid; // legacy alias
+  const entitled = isPaid || isTrial;
+  const trialRemaining = Math.max(0, state.trialLimit - state.trialUsed);
+
+  return {
+    state,
+    loading,
+    hasBridge,
+    isActive,
+    isPaid,
+    isTrial,
+    entitled,
+    trialRemaining,
+    buy,
+    openPortal,
+    refresh,
+    recordUsage,
+  };
 }

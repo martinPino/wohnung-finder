@@ -10,7 +10,7 @@
 // Compiles to CommonJS (dist-electron/licensing/types.js).
 // ---------------------------------------------------------------------------
 
-export type LicenseStatus = "inactive" | "active" | "expired" | "loading";
+export type LicenseStatus = "inactive" | "active" | "trial" | "expired" | "loading";
 export type LicensePlan = "monthly" | "lifetime" | "none";
 export type BuyablePlan = "monthly" | "lifetime";
 
@@ -21,4 +21,8 @@ export interface LicenseState {
   customerId: string | null;
   subscriptionId: string | null;
   lastCheckedAt: string | null;
+  /** Free-trial contact requests already used (server-tracked). */
+  trialUsed: number;
+  /** Free-trial contact-request limit (TRIAL_LIMIT). */
+  trialLimit: number;
 }

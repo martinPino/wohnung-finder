@@ -60,10 +60,22 @@ export const createCheckoutUrl = `${functionsBaseUrl}/createCheckout`;
 export const customerPortalUrl = `${functionsBaseUrl}/customerPortal`;
 
 /**
+ * Cloud Function that increments this machine's free-trial contact counter
+ * (server-authoritative, so it can't be reset by clearing local data).
+ */
+export const recordTrialUsageUrl = `${functionsBaseUrl}/recordTrialUsage`;
+
+/**
  * The Firestore collection holding one license document per machineId.
  * The document id is the machineId; the doc is publicly readable by id.
  */
 export const LICENSES_COLLECTION = "licenses";
+
+/**
+ * Free-trial limit: number of contact requests allowed before the paywall.
+ * MUST match TRIAL_LIMIT in firebase/functions/index.js.
+ */
+export const TRIAL_LIMIT = 20;
 
 // ---------------------------------------------------------------------------
 // Paddle public identifiers (price IDs + client token). NOT secrets.

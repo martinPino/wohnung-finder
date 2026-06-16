@@ -36,7 +36,7 @@ function CheckIcon() {
 }
 
 export default function LicenseGate({ children }: LicenseGateProps) {
-  const { state, loading, hasBridge, isActive, buy, openPortal, refresh } = useLicense();
+  const { state, loading, hasBridge, isActive, entitled, buy, openPortal, refresh } = useLicense();
   const { lang, setLang, t } = useLang();
   const [busyPlan, setBusyPlan] = useState<BuyablePlan | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,7 +68,7 @@ export default function LicenseGate({ children }: LicenseGateProps) {
     }, 4000);
   };
 
-  const showGate = hasBridge && !loading && !isActive;
+  const showGate = hasBridge && !loading && !entitled;
   const isExpired = state.status === "expired";
 
   // Plan cards, built from the active translation. Prices are currency, not text.

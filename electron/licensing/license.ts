@@ -37,6 +37,8 @@ import { getLicenseDoc, type LicenseDoc } from "./firebase";
 import {
   OFFLINE_GRACE_DAYS,
   LICENSE_REQUEST_TIMEOUT_MS,
+  TRIAL_LIMIT,
+  recordTrialUsageUrl,
   isLicensingBypassed,
 } from "./config";
 import type { LicenseState, LicenseStatus, LicensePlan } from "./types";
@@ -71,6 +73,10 @@ interface LicenseCache {
   subscriptionId?: string | null;
   /** ISO entitlement expiry (monthly period end); null/absent for lifetime. */
   expiresAt?: string | null;
+  /** Free-trial contact requests used (last known from the server). */
+  trialUsed?: number;
+  /** True once this machine has ever paid (blocks a second free trial). */
+  everPaid?: boolean;
   /** Epoch millis of the last SUCCESSFUL online verification. */
   lastVerifiedAt?: number;
   /** Highest wall-clock (epoch millis) ever observed — clock-rollback guard. */
@@ -85,7 +91,10 @@ const cache = new Store<LicenseCache>({ name: "license-cache" });
 
 /** Coerce an arbitrary stored status into the typed union, defaulting safely. */
 function normalizeStatus(value: unknown): LicenseStatus {
-  return value === "active" || value === "expired" || value === "inactive"
+  return value === "active" ||
+    value === "expired" ||
+    value === "inactive" ||
+    value === "trial"
     ? value
     : "inactive";
 }
@@ -164,11 +173,23 @@ function applyOnlineResult(
   const customerId = docData?.customerId ?? null;
   const subscriptionId = docData?.subscriptionId ?? null;
   const expiresAt = docData?.expiresAt ?? null;
+  const trialUsed = Math.max(0, Number(docData?.trialContactsUsed) || 0);
+  const everPaid = docData?.everPaid === true;
 
   // Local expiry enforcement: an "active" doc whose period has ended is treated
   // as expired regardless of the stored status (webhook lag / failed renewal).
   if (status === "active" && isExpired(expiresAt, now)) {
     status = "expired";
+  }
+
+  // Not a paid/active license => decide between an ongoing free trial and a
+  // gated state. A machine that has ever paid does NOT get a fresh trial.
+  if (status !== "active") {
+    if (!everPaid && trialUsed < TRIAL_LIMIT) {
+      status = "trial";
+    } else if (status === "trial") {
+      status = "inactive";
+    }
   }
 
   // Refresh the cache with this verified snapshot.
@@ -177,6 +198,8 @@ function applyOnlineResult(
   cache.set("customerId", customerId);
   cache.set("subscriptionId", subscriptionId);
   cache.set("expiresAt", expiresAt);
+  cache.set("trialUsed", trialUsed);
+  cache.set("everPaid", everPaid);
   cache.set("lastVerifiedAt", now);
   advanceClockWatermark(now);
 
@@ -187,6 +210,8 @@ function applyOnlineResult(
     customerId,
     subscriptionId,
     lastCheckedAt: new Date(now).toISOString(),
+    trialUsed,
+    trialLimit: TRIAL_LIMIT,
   };
 }
 
@@ -207,6 +232,7 @@ function buildOfflineState(machineId: string, now: number): LicenseState {
   const customerId = cache.get("customerId") ?? null;
   const subscriptionId = cache.get("subscriptionId") ?? null;
   const expiresAt = cache.get("expiresAt") ?? null;
+  const trialUsed = Math.max(0, Number(cache.get("trialUsed")) || 0);
   const lastVerifiedAt = cache.get("lastVerifiedAt");
 
   // The most recent successful sync we can report to the renderer. Null if we
@@ -216,68 +242,45 @@ function buildOfflineState(machineId: string, now: number): LicenseState {
       ? new Date(lastVerifiedAt).toISOString()
       : null;
 
+  // Common fields every offline result carries.
+  const base = {
+    plan,
+    machineId,
+    customerId,
+    subscriptionId,
+    lastCheckedAt,
+    trialUsed,
+    trialLimit: TRIAL_LIMIT,
+  };
+
   // Advance (and read the previous) clock watermark. Do this BEFORE the grace
   // math so a rollback can't help the user re-enter the window.
   const prevWatermark = advanceClockWatermark(now);
 
   // If we never had a successful verification, there is nothing to grant.
   if (typeof lastVerifiedAt !== "number") {
-    return {
-      status: cachedStatus === "active" ? "inactive" : cachedStatus,
-      plan,
-      machineId,
-      customerId,
-      subscriptionId,
-      lastCheckedAt,
-    };
+    return { ...base, status: cachedStatus === "active" ? "inactive" : cachedStatus };
   }
 
   // --- Clock-rollback guard -------------------------------------------------
-  // If the current clock is meaningfully behind the highest value we have ever
-  // seen, the system clock was set backwards. A time-based grace window is then
-  // untrustworthy, so we void the offline grace and report expired.
   const clockRolledBack = now < prevWatermark - CLOCK_ROLLBACK_SLACK_MS;
   if (clockRolledBack) {
-    return {
-      status: "expired",
-      plan,
-      machineId,
-      customerId,
-      subscriptionId,
-      lastCheckedAt,
-    };
+    return { ...base, status: "expired" };
   }
 
   // --- 7-day offline grace --------------------------------------------------
-  // Measure elapsed time from the last successful verification. We clamp to >=0
-  // so a forward clock jump never produces a negative age.
   const offlineAge = Math.max(0, now - lastVerifiedAt);
   if (offlineAge > OFFLINE_GRACE_MS) {
-    // Grace exhausted: stop honoring a stale "active" cache.
-    return {
-      status: "inactive",
-      plan,
-      machineId,
-      customerId,
-      subscriptionId,
-      lastCheckedAt,
-    };
+    // Grace exhausted: stop honoring a stale active/trial cache.
+    return { ...base, status: "inactive" };
   }
 
-  // --- Within grace: honor the cache, but still enforce expiresAt -----------
+  // --- Within grace: honor the cache (active or trial), enforce expiresAt ----
   let status = cachedStatus;
   if (status === "active" && isExpired(expiresAt, now)) {
     status = "expired";
   }
-
-  return {
-    status,
-    plan,
-    machineId,
-    customerId,
-    subscriptionId,
-    lastCheckedAt,
-  };
+  return { ...base, status };
 }
 
 // ---------------------------------------------------------------------------
@@ -309,6 +312,8 @@ export async function verifyLicense(): Promise<LicenseState> {
       customerId: null,
       subscriptionId: null,
       lastCheckedAt: new Date(now).toISOString(),
+      trialUsed: 0,
+      trialLimit: TRIAL_LIMIT,
     };
   }
 
@@ -328,4 +333,33 @@ export async function verifyLicense(): Promise<LicenseState> {
     );
     return buildOfflineState(machineId, now);
   }
+}
+
+/**
+ * Reports `count` consumed free-trial contact requests to the backend (which
+ * holds the authoritative counter), then re-verifies. No-op when licensing is
+ * bypassed. Failures (offline) are swallowed — the run already happened.
+ *
+ * @param count Number of contact requests sent in the last run.
+ * @returns The refreshed {@link LicenseState}.
+ */
+export async function recordTrialUsage(count: number): Promise<LicenseState> {
+  if (isLicensingBypassed()) return verifyLicense();
+  const n = Math.max(0, Math.floor(count) || 0);
+  if (n > 0) {
+    try {
+      await fetch(recordTrialUsageUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ machineId: getStableMachineId(), count: n }),
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[license] recordTrialUsage failed:",
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+  return verifyLicense();
 }
