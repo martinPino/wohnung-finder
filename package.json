@@ -11,7 +11,6 @@
     "chrome": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts --launch-chrome",
     "automation": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts",
     "automation:dry": "ts-node --project tsconfig.automation.json src/automation/immoscout.ts --dry-run",
-
     "electron:dev": "concurrently -k -n NEXT,ELECTRON -c cyan,yellow \"next dev -p 3005\" \"wait-on http://localhost:3005 && ELECTRON_DEV_PORT=3005 electron .\"",
     "electron:compile": "tsc -p electron/tsconfig.json",
     "electron:build": "npm run build && npm run electron:compile && electron-builder",
@@ -20,6 +19,7 @@
     "electron:pack": "npm run build && npm run electron:compile && electron-builder --dir"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "electron-updater": "^6.1.7",
     "next": "14.2.3",
     "node-cron": "^3.0.3",
@@ -37,6 +37,8 @@
     "concurrently": "^8.2.2",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
@@ -80,17 +82,27 @@
       {
         "from": ".next/static",
         "to": "app/.next/standalone/.next/static",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "public",
         "to": "app/public",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "mac": {
       "target": [
-        { "target": "dmg", "arch": ["arm64", "x64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ],
       "category": "public.app-category.utilities",
       "darkModeSupport": true,
@@ -99,8 +111,16 @@
     "dmg": {
       "title": "ImmoScout Automation ${version}",
       "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
       ]
     },
     "win": {
