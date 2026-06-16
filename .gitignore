@@ -36,3 +36,8 @@ Thumbs.db
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Firebase functions
+firebase/functions/node_modules/
+firebase/functions/.env
+firebase/.firebase/

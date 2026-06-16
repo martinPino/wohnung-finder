@@ -3,6 +3,10 @@ import { autoUpdater } from "electron-updater";
 import * as path from "path";
 import * as http from "http";
 import * as fs from "fs";
+import {
+  registerLicenseIpc,
+  verifyLicenseOnStartup,
+} from "./licensing/ipc";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -132,6 +136,9 @@ async function createWindow(): Promise<void> {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      // Preload bridge that exposes window.license to the renderer.
+      // Compiled output lives next to main.js in dist-electron/.
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -185,6 +192,13 @@ app.whenReady().then(async () => {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+
+  // Register licensing IPC handlers and run an initial verification so the
+  // renderer has license state ready as soon as window.license is queried.
+  registerLicenseIpc();
+  verifyLicenseOnStartup().catch((err) =>
+    console.error("[licensing] initial verifyLicense failed:", err)
+  );
 
   await createWindow();
 

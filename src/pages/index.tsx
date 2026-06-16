@@ -6,6 +6,7 @@ import StatusPanel from "@/components/StatusPanel";
 import ContactedList from "@/components/ContactedList";
 import ScheduleForm from "@/components/ScheduleForm";
 import Onboarding, { useOnboarding } from "@/components/Onboarding";
+import { ManageSubscriptionLink } from "@/components/LicenseGate";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useLang } from "@/hooks/useLang";
 import { type Lang } from "@/lib/i18n";
@@ -105,6 +106,9 @@ export default function Home() {
 
             {/* Setup guide + Language switcher */}
             <div className="flex items-center gap-2">
+            {/* Active monthly subscribers manage/cancel their plan here
+                (the LicenseGate is hidden once the license is active). */}
+            <ManageSubscriptionLink />
             <button
               onClick={reopenOnboarding}
               className="flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-gray-500 shadow-sm hover:text-gray-700 hover:bg-gray-50"
