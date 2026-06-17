@@ -505,6 +505,17 @@
     }
     .rv-counter.near { color: #f59e0b; font-weight: 600; }
     .review-form .btn-primary { width: 100%; justify-content: center; border: none; cursor: pointer; }
+    .review-done {
+      max-width: 560px;
+      margin: 3rem auto 0;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: #15803d;
+    }
     @media (max-width: 720px) {
       .reviews-carousel { gap: .5rem; }
       .reviews-row { flex-direction: column; }
@@ -772,6 +783,7 @@
         <div class="rv-counter" id="reviewTextCount">0 / 280</div>
         <button type="submit" class="btn-primary" id="reviewSubmit">Bewertung abschicken</button>
       </form>
+      <p class="review-done" id="reviewDone" style="display:none;"></p>
     </div>
   </section>
 
@@ -1069,19 +1081,19 @@
       de: { label: "Bewertungen", h2: "Was Nutzer sagen", sub: "Teile deine Erfahrung mit WohnungFinder.",
             formTitle: "Bewertung schreiben", name: "Dein Name", text: "Deine Bewertung…",
             submit: "Bewertung abschicken", sending: "Senden…", empty: "Noch keine Bewertungen. Sei der/die Erste!",
-            thanks: "Danke für deine Bewertung!", errName: "Bitte gib deinen Namen ein.",
+            thanks: "Danke für deine Bewertung!", done: "Du hast bereits eine Bewertung abgegeben. Danke!", errName: "Bitte gib deinen Namen ein.",
             errText: "Bitte schreibe eine kurze Bewertung.", errRating: "Bitte wähle 1–5 Sterne.",
             errSend: "Konnte nicht gesendet werden. Bitte später erneut versuchen." },
       en: { label: "Reviews", h2: "What users say", sub: "Share your experience with WohnungFinder.",
             formTitle: "Write a review", name: "Your name", text: "Your review…",
             submit: "Submit review", sending: "Sending…", empty: "No reviews yet. Be the first!",
-            thanks: "Thanks for your review!", errName: "Please enter your name.",
+            thanks: "Thanks for your review!", done: "You've already left a review. Thanks!", errName: "Please enter your name.",
             errText: "Please write a short review.", errRating: "Please pick 1–5 stars.",
             errSend: "Could not submit. Please try again later." },
       es: { label: "Reseñas", h2: "Lo que dicen los usuarios", sub: "Compartí tu experiencia con WohnungFinder.",
             formTitle: "Escribir una reseña", name: "Tu nombre", text: "Tu reseña…",
             submit: "Enviar reseña", sending: "Enviando…", empty: "Todavía no hay reseñas. ¡Sé el primero!",
-            thanks: "¡Gracias por tu reseña!", errName: "Ingresá tu nombre.",
+            thanks: "¡Gracias por tu reseña!", done: "Ya dejaste una reseña. ¡Gracias!", errName: "Ingresá tu nombre.",
             errText: "Escribí una reseña breve.", errRating: "Elegí entre 1 y 5 estrellas.",
             errSend: "No se pudo enviar. Probá de nuevo más tarde." }
     };
@@ -1156,6 +1168,17 @@
       next.classList.toggle("hidden", page >= pages - 1);
     }
 
+    // One review per browser (no login → enforced client-side via localStorage).
+    const REVIEWED_KEY = "wf_reviewed";
+    const hasReviewed = () => { try { return localStorage.getItem(REVIEWED_KEY) === "1"; } catch (e) { return false; } };
+    function applyReviewedState() {
+      const reviewed = hasReviewed();
+      $("reviewForm").style.display = reviewed ? "none" : "";
+      const done = $("reviewDone");
+      done.style.display = reviewed ? "" : "none";
+      if (reviewed) done.textContent = t("done");
+    }
+
     function localize() {
       $("rv-label").textContent = t("label");
       $("rv-h2").textContent = t("h2");
@@ -1164,6 +1187,7 @@
       $("reviewName").placeholder = t("name");
       $("reviewText").placeholder = t("text");
       $("reviewSubmit").textContent = t("submit");
+      applyReviewedState();
       renderList();
     }
 
@@ -1197,11 +1221,12 @@
           rating: Math.max(1, Math.min(5, Math.round(rating))),
           createdAt: serverTimestamp()
         });
+        try { localStorage.setItem(REVIEWED_KEY, "1"); } catch (e) {}
         $("reviewName").value = ""; $("reviewText").value = ""; rating = 0; paintPicker();
         $("reviewName").dispatchEvent(new Event("input"));
         $("reviewText").dispatchEvent(new Event("input"));
         await load();
-        alert(t("thanks"));
+        applyReviewedState();
       } catch (err) {
         console.warn("[reviews] submit failed:", err);
         alert(t("errSend"));
