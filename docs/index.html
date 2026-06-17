@@ -412,6 +412,90 @@
       border-top: 1px solid var(--gray-100);
     }
     footer a { color: var(--gray-400); }
+
+    /* REVIEWS */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .review-card {
+      background: #fff;
+      border: 1px solid var(--gray-100);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+    .review-stars { color: #f59e0b; font-size: 1rem; letter-spacing: .08em; }
+    .review-text { color: var(--gray-600); font-size: .92rem; line-height: 1.6; flex: 1; }
+    .review-name { font-weight: 700; font-size: .9rem; color: var(--gray-900); }
+    .review-empty { text-align: center; color: var(--gray-400); padding: 2rem 0; }
+
+    .reviews-pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem auto 0;
+    }
+    .rv-page-btn {
+      width: 38px; height: 38px;
+      border: 1px solid var(--gray-200);
+      background: #fff;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.05rem;
+      color: var(--gray-600);
+      box-shadow: var(--shadow-sm);
+      transition: background .15s, border-color .15s;
+    }
+    .rv-page-btn:hover:not(:disabled) { background: var(--gray-50); border-color: #d1d5db; }
+    .rv-page-btn:disabled { opacity: .4; cursor: default; }
+    .rv-page-info { font-size: .9rem; font-weight: 600; color: var(--gray-600); min-width: 56px; text-align: center; }
+
+    .review-form {
+      max-width: 560px;
+      margin: 3rem auto 0;
+      background: #fff;
+      border: 1px solid var(--gray-100);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .review-form h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.1rem; letter-spacing: -.01em; }
+    .rv-stars-pick { display: flex; justify-content: center; gap: .25rem; margin-bottom: 1.1rem; }
+    .rv-star {
+      background: none; border: none; cursor: pointer;
+      font-size: 2rem; line-height: 1; color: var(--gray-200);
+      transition: color .12s, transform .1s;
+      padding: 0 .1rem;
+    }
+    .rv-star:hover { transform: scale(1.12); }
+    .rv-star.on { color: #f59e0b; }
+    .review-form input, .review-form textarea {
+      width: 100%;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: .75rem .9rem;
+      font: inherit;
+      font-size: .95rem;
+      color: var(--gray-900);
+      margin-bottom: .8rem;
+      background: var(--gray-50);
+      transition: border-color .15s, background .15s;
+    }
+    .review-form input:focus, .review-form textarea:focus {
+      outline: none; border-color: var(--blue); background: #fff;
+    }
+    .review-form textarea { resize: vertical; min-height: 90px; }
+    .review-form .btn-primary { width: 100%; justify-content: center; border: none; cursor: pointer; }
+
   /* ── MOBILE ─────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
     /* Nav — hide CTA on mobile, hero already has the download button */
@@ -648,6 +732,31 @@
       <div style="text-align:center;margin-top:1.25rem;">
         <a class="btn-primary" href="https://github.com/martinPino/wohnung-finder/releases/latest/download/WohnungFinder-Mac.dmg" target="_blank"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.36 12.78c.02 2.5 2.19 3.33 2.22 3.34-.02.06-.35 1.18-1.14 2.34-.69 1-1.4 2-2.52 2.02-1.1.02-1.46-.65-2.71-.65s-1.65.63-2.69.67c-1.08.04-1.9-1.08-2.6-2.08-1.42-2.06-2.51-5.82-1.05-8.36.72-1.26 2.02-2.06 3.42-2.08 1.06-.02 2.06.71 2.71.71.65 0 1.87-.88 3.15-.75.54.02 2.05.22 3.02 1.64-.08.05-1.8 1.05-1.78 3.13M14.3 5.39c.57-.69.96-1.65.85-2.61-.83.03-1.83.55-2.42 1.24-.53.61-1 1.59-.87 2.53.92.07 1.87-.47 2.44-1.16"/></svg><span data-i18n="pricing_cta">Für Mac herunterladen</span></a>
       </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section" id="reviews">
+    <div class="section-inner">
+      <p class="section-label" id="rv-label">Reviews</p>
+      <h2 id="rv-h2">Was Nutzer sagen</h2>
+      <p class="section-sub" id="rv-sub">Teile deine Erfahrung mit WohnungFinder.</p>
+
+      <div class="reviews-grid" id="reviewsList"></div>
+
+      <div class="reviews-pager" id="reviewsPager" style="display:none;">
+        <button class="rv-page-btn" id="reviewPrev" aria-label="prev">←</button>
+        <span class="rv-page-info" id="reviewPageInfo">1 / 1</span>
+        <button class="rv-page-btn" id="reviewNext" aria-label="next">→</button>
+      </div>
+
+      <form class="review-form" id="reviewForm">
+        <h3 id="rv-form-title">Bewertung schreiben</h3>
+        <div class="rv-stars-pick" id="reviewStars" role="radiogroup" aria-label="Rating"></div>
+        <input id="reviewName" type="text" maxlength="40" autocomplete="name" />
+        <textarea id="reviewText" rows="4" maxlength="500"></textarea>
+        <button type="submit" class="btn-primary" id="reviewSubmit">Bewertung abschicken</button>
+      </form>
     </div>
   </section>
 
@@ -909,6 +1018,7 @@
         b.classList.toggle("active", b.getAttribute("data-lang") === lang);
       });
       try { localStorage.setItem("wf_lang", lang); } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent("wf-lang", { detail: lang })); } catch (e) {}
     }
 
     (function () {
@@ -921,6 +1031,158 @@
         b.addEventListener("click", function () { applyLang(b.getAttribute("data-lang")); });
       });
     })();
+  </script>
+
+  <!-- REVIEWS (Firebase Firestore) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBHw9KamMXIH-PHMCj1P00NxKYn3wMk9XY",
+      authDomain: "wohnung-finder-c0972.firebaseapp.com",
+      projectId: "wohnung-finder-c0972",
+      storageBucket: "wohnung-finder-c0972.firebasestorage.app",
+      messagingSenderId: "776531525408",
+      appId: "1:776531525408:web:17a8967ca64158dd3b6145"
+    };
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    // Self-contained i18n for the reviews UI (the rest of the page uses I18N).
+    const RV = {
+      de: { label: "Bewertungen", h2: "Was Nutzer sagen", sub: "Teile deine Erfahrung mit WohnungFinder.",
+            formTitle: "Bewertung schreiben", name: "Dein Name", text: "Deine Bewertung…",
+            submit: "Bewertung abschicken", sending: "Senden…", empty: "Noch keine Bewertungen. Sei der/die Erste!",
+            thanks: "Danke für deine Bewertung!", errName: "Bitte gib deinen Namen ein.",
+            errText: "Bitte schreibe eine kurze Bewertung.", errRating: "Bitte wähle 1–5 Sterne.",
+            errSend: "Konnte nicht gesendet werden. Bitte später erneut versuchen." },
+      en: { label: "Reviews", h2: "What users say", sub: "Share your experience with WohnungFinder.",
+            formTitle: "Write a review", name: "Your name", text: "Your review…",
+            submit: "Submit review", sending: "Sending…", empty: "No reviews yet. Be the first!",
+            thanks: "Thanks for your review!", errName: "Please enter your name.",
+            errText: "Please write a short review.", errRating: "Please pick 1–5 stars.",
+            errSend: "Could not submit. Please try again later." },
+      es: { label: "Reseñas", h2: "Lo que dicen los usuarios", sub: "Compartí tu experiencia con WohnungFinder.",
+            formTitle: "Escribir una reseña", name: "Tu nombre", text: "Tu reseña…",
+            submit: "Enviar reseña", sending: "Enviando…", empty: "Todavía no hay reseñas. ¡Sé el primero!",
+            thanks: "¡Gracias por tu reseña!", errName: "Ingresá tu nombre.",
+            errText: "Escribí una reseña breve.", errRating: "Elegí entre 1 y 5 estrellas.",
+            errSend: "No se pudo enviar. Probá de nuevo más tarde." }
+    };
+    const lang = () => { try { return localStorage.getItem("wf_lang") || "de"; } catch (e) { return "de"; } };
+    const t = (k) => (RV[lang()] || RV.de)[k];
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
+    const starStr = (n) => { let s = ""; for (let i = 1; i <= 5; i++) s += i <= n ? "★" : "☆"; return s; };
+
+    const PER_PAGE = 6;
+    let reviews = [];
+    let page = 0;
+    let rating = 0;
+
+    function buildPicker() {
+      const wrap = $("reviewStars");
+      wrap.innerHTML = "";
+      for (let i = 1; i <= 5; i++) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "rv-star";
+        b.textContent = "★";
+        b.setAttribute("aria-label", i + "");
+        b.addEventListener("click", () => { rating = i; paintPicker(); });
+        b.addEventListener("mouseenter", () => paintPicker(i));
+        b.addEventListener("mouseleave", () => paintPicker());
+        wrap.appendChild(b);
+      }
+      paintPicker();
+    }
+    function paintPicker(hover) {
+      const n = hover || rating;
+      [...$("reviewStars").children].forEach((b, idx) => b.classList.toggle("on", idx < n));
+    }
+
+    function renderList() {
+      const list = $("reviewsList");
+      const pager = $("reviewsPager");
+      if (!reviews.length) {
+        list.innerHTML = '<p class="review-empty">' + esc(t("empty")) + "</p>";
+        pager.style.display = "none";
+        return;
+      }
+      const pages = Math.ceil(reviews.length / PER_PAGE);
+      if (page > pages - 1) page = pages - 1;
+      const slice = reviews.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+      list.innerHTML = slice.map((r) =>
+        '<div class="review-card">' +
+          '<div class="review-stars">' + starStr(r.rating) + "</div>" +
+          '<p class="review-text">' + esc(r.text) + "</p>" +
+          '<p class="review-name">' + esc(r.name) + "</p>" +
+        "</div>"
+      ).join("");
+      $("reviewPageInfo").textContent = (page + 1) + " / " + pages;
+      $("reviewPrev").disabled = page === 0;
+      $("reviewNext").disabled = page >= pages - 1;
+      pager.style.display = pages > 1 ? "flex" : "none";
+    }
+
+    function localize() {
+      $("rv-label").textContent = t("label");
+      $("rv-h2").textContent = t("h2");
+      $("rv-sub").textContent = t("sub");
+      $("rv-form-title").textContent = t("formTitle");
+      $("reviewName").placeholder = t("name");
+      $("reviewText").placeholder = t("text");
+      $("reviewSubmit").textContent = t("submit");
+      renderList();
+    }
+
+    async function load() {
+      try {
+        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(60));
+        const snap = await getDocs(q);
+        reviews = snap.docs.map((d) => d.data())
+          .filter((r) => r && typeof r.name === "string" && typeof r.text === "string" && r.rating);
+        page = 0;
+        renderList();
+      } catch (e) { console.warn("[reviews] load failed:", e); }
+    }
+
+    $("reviewPrev").addEventListener("click", () => { if (page > 0) { page--; renderList(); } });
+    $("reviewNext").addEventListener("click", () => { page++; renderList(); });
+
+    $("reviewForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = $("reviewName").value.trim();
+      const text = $("reviewText").value.trim();
+      if (!name) { alert(t("errName")); return; }
+      if (!text) { alert(t("errText")); return; }
+      if (rating < 1) { alert(t("errRating")); return; }
+      const btn = $("reviewSubmit");
+      btn.disabled = true; btn.textContent = t("sending");
+      try {
+        await addDoc(collection(db, "reviews"), {
+          name: name.slice(0, 40),
+          text: text.slice(0, 500),
+          rating: Math.max(1, Math.min(5, Math.round(rating))),
+          createdAt: serverTimestamp()
+        });
+        $("reviewName").value = ""; $("reviewText").value = ""; rating = 0; paintPicker();
+        await load();
+        alert(t("thanks"));
+      } catch (err) {
+        console.warn("[reviews] submit failed:", err);
+        alert(t("errSend"));
+      } finally {
+        btn.disabled = false; btn.textContent = t("submit");
+      }
+    });
+
+    window.addEventListener("wf-lang", localize);
+    buildPicker();
+    localize();
+    load();
   </script>
 
 </body>
