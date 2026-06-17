@@ -414,13 +414,21 @@
     footer a { color: var(--gray-400); }
 
     /* REVIEWS */
-    .reviews-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.25rem;
-      max-width: 1000px;
+    .reviews-carousel {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      max-width: 1040px;
       margin: 0 auto;
     }
+    .reviews-row {
+      display: flex;
+      gap: 1.25rem;
+      flex: 1;
+      min-width: 0;
+      justify-content: center;
+    }
+    .reviews-row .review-card { flex: 1 1 0; min-width: 0; max-width: 320px; }
     .review-card {
       background: #fff;
       border: 1px solid var(--gray-100);
@@ -434,29 +442,23 @@
     .review-stars { color: #f59e0b; font-size: 1rem; letter-spacing: .08em; }
     .review-text { color: var(--gray-600); font-size: .92rem; line-height: 1.6; flex: 1; }
     .review-name { font-weight: 700; font-size: .9rem; color: var(--gray-900); }
-    .review-empty { text-align: center; color: var(--gray-400); padding: 2rem 0; }
+    .review-empty { flex: 1; text-align: center; color: var(--gray-400); padding: 2rem 0; }
 
-    .reviews-pager {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem auto 0;
-    }
-    .rv-page-btn {
-      width: 38px; height: 38px;
+    .rv-arrow {
+      flex-shrink: 0;
+      width: 46px; height: 46px;
       border: 1px solid var(--gray-200);
       background: #fff;
-      border-radius: 10px;
+      border-radius: 50%;
       cursor: pointer;
-      font-size: 1.05rem;
+      font-size: 1.2rem;
       color: var(--gray-600);
       box-shadow: var(--shadow-sm);
-      transition: background .15s, border-color .15s;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s, transform .1s;
     }
-    .rv-page-btn:hover:not(:disabled) { background: var(--gray-50); border-color: #d1d5db; }
-    .rv-page-btn:disabled { opacity: .4; cursor: default; }
-    .rv-page-info { font-size: .9rem; font-weight: 600; color: var(--gray-600); min-width: 56px; text-align: center; }
+    .rv-arrow:hover { background: var(--gray-50); border-color: #d1d5db; transform: translateY(-1px); }
+    .rv-arrow.hidden { visibility: hidden; }
 
     .review-form {
       max-width: 560px;
@@ -494,7 +496,20 @@
       outline: none; border-color: var(--blue); background: #fff;
     }
     .review-form textarea { resize: vertical; min-height: 90px; }
+    .rv-counter {
+      margin: -.55rem 0 .7rem;
+      text-align: right;
+      font-size: .72rem;
+      color: var(--gray-400);
+      transition: color .15s;
+    }
+    .rv-counter.near { color: #f59e0b; font-weight: 600; }
     .review-form .btn-primary { width: 100%; justify-content: center; border: none; cursor: pointer; }
+    @media (max-width: 720px) {
+      .reviews-carousel { gap: .5rem; }
+      .reviews-row { flex-direction: column; }
+      .rv-arrow { width: 40px; height: 40px; font-size: 1.05rem; }
+    }
 
   /* ── MOBILE ─────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
@@ -742,19 +757,19 @@
       <h2 id="rv-h2">Was Nutzer sagen</h2>
       <p class="section-sub" id="rv-sub">Teile deine Erfahrung mit WohnungFinder.</p>
 
-      <div class="reviews-grid" id="reviewsList"></div>
-
-      <div class="reviews-pager" id="reviewsPager" style="display:none;">
-        <button class="rv-page-btn" id="reviewPrev" aria-label="prev">←</button>
-        <span class="rv-page-info" id="reviewPageInfo">1 / 1</span>
-        <button class="rv-page-btn" id="reviewNext" aria-label="next">→</button>
+      <div class="reviews-carousel">
+        <button class="rv-arrow hidden" id="reviewPrev" aria-label="previous reviews">←</button>
+        <div class="reviews-row" id="reviewsList"></div>
+        <button class="rv-arrow hidden" id="reviewNext" aria-label="next reviews">→</button>
       </div>
 
       <form class="review-form" id="reviewForm">
         <h3 id="rv-form-title">Bewertung schreiben</h3>
         <div class="rv-stars-pick" id="reviewStars" role="radiogroup" aria-label="Rating"></div>
         <input id="reviewName" type="text" maxlength="40" autocomplete="name" />
-        <textarea id="reviewText" rows="4" maxlength="500"></textarea>
+        <div class="rv-counter" id="reviewNameCount">0 / 40</div>
+        <textarea id="reviewText" rows="4" maxlength="280"></textarea>
+        <div class="rv-counter" id="reviewTextCount">0 / 280</div>
         <button type="submit" class="btn-primary" id="reviewSubmit">Bewertung abschicken</button>
       </form>
     </div>
@@ -1077,7 +1092,7 @@
     const esc = (s) => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
     const starStr = (n) => { let s = ""; for (let i = 1; i <= 5; i++) s += i <= n ? "★" : "☆"; return s; };
 
-    const PER_PAGE = 6;
+    const PER_PAGE = 3;
     let reviews = [];
     let page = 0;
     let rating = 0;
@@ -1103,16 +1118,31 @@
       [...$("reviewStars").children].forEach((b, idx) => b.classList.toggle("on", idx < n));
     }
 
+    const LIMITS = { reviewName: 40, reviewText: 280 };
+    function bindCounter(inputId, countId) {
+      const el = $(inputId), c = $(countId), max = LIMITS[inputId];
+      const upd = () => {
+        const n = el.value.length;
+        c.textContent = n + " / " + max;
+        c.classList.toggle("near", n >= max - 20);
+      };
+      el.addEventListener("input", upd);
+      upd();
+    }
+
     function renderList() {
       const list = $("reviewsList");
-      const pager = $("reviewsPager");
+      const prev = $("reviewPrev");
+      const next = $("reviewNext");
       if (!reviews.length) {
         list.innerHTML = '<p class="review-empty">' + esc(t("empty")) + "</p>";
-        pager.style.display = "none";
+        prev.classList.add("hidden");
+        next.classList.add("hidden");
         return;
       }
       const pages = Math.ceil(reviews.length / PER_PAGE);
       if (page > pages - 1) page = pages - 1;
+      if (page < 0) page = 0;
       const slice = reviews.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
       list.innerHTML = slice.map((r) =>
         '<div class="review-card">' +
@@ -1121,10 +1151,9 @@
           '<p class="review-name">' + esc(r.name) + "</p>" +
         "</div>"
       ).join("");
-      $("reviewPageInfo").textContent = (page + 1) + " / " + pages;
-      $("reviewPrev").disabled = page === 0;
-      $("reviewNext").disabled = page >= pages - 1;
-      pager.style.display = pages > 1 ? "flex" : "none";
+      // Left arrow only once the user has advanced; right arrow only if more pages.
+      prev.classList.toggle("hidden", page === 0);
+      next.classList.toggle("hidden", page >= pages - 1);
     }
 
     function localize() {
@@ -1164,11 +1193,13 @@
       try {
         await addDoc(collection(db, "reviews"), {
           name: name.slice(0, 40),
-          text: text.slice(0, 500),
+          text: text.slice(0, 280),
           rating: Math.max(1, Math.min(5, Math.round(rating))),
           createdAt: serverTimestamp()
         });
         $("reviewName").value = ""; $("reviewText").value = ""; rating = 0; paintPicker();
+        $("reviewName").dispatchEvent(new Event("input"));
+        $("reviewText").dispatchEvent(new Event("input"));
         await load();
         alert(t("thanks"));
       } catch (err) {
@@ -1181,6 +1212,8 @@
 
     window.addEventListener("wf-lang", localize);
     buildPicker();
+    bindCounter("reviewName", "reviewNameCount");
+    bindCounter("reviewText", "reviewTextCount");
     localize();
     load();
   </script>
